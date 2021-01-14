@@ -11,19 +11,19 @@ declare module 'twilio-video' {
     simulcast?: boolean;
   }
 
-  // interface LocalTrackPublication {
-  //   setPriority: (priority: Track.Priority) => void;
-  // }
+  interface LocalTrackPublication {
+    setPriority: (priority: Track.Priority) => void;
+  }
 
   interface LocalVideoTrack {
     isSwitchedOff: undefined;
     setPriority: undefined;
   }
 
-  // interface RemoteVideoTrack {
-  //   isSwitchedOff: boolean;
-  //   setPriority: (priority: Track.Priority | null) => void;
-  // }
+  interface RemoteVideoTrack {
+    isSwitchedOff: boolean;
+    setPriority: (priority: Track.Priority | null) => void;
+  }
 
   interface VideoBandwidthProfileOptions {
     trackSwitchOffMode?: 'predicted' | 'detected' | 'disabled';
