@@ -10,6 +10,8 @@
 
 ## watchRTC SDK usage
 
+![Code injection Preview](./watchRTC-injection.png)
+
 - start sample
 - join a Room
 - duplicate tab
