@@ -74,7 +74,7 @@ export default function DeviceSelectionScreen({ name, roomName, setStep }: Devic
   }, []);
 
   const handleJoin = () => {
-    watchRTC.setConfig({ ...wrtcConfig, keys: { room: roomName, peer: name } });
+    watchRTC.setConfig({ ...wrtcConfig, keys: { room: roomName, peer: name, searchRoom: roomName, searchPeer: name } });
     getToken(name, roomName).then(token => connect(token));
 
     setTimeout(() => {
