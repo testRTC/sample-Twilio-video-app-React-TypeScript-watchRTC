@@ -83,11 +83,6 @@ export default function DeviceSelectionScreen({ name, roomName, setStep }: Devic
       },
     });
     getToken(name, roomName).then(token => connect(token));
-
-    setTimeout(() => {
-      // watchRTC.addTags(['tag2', 'tag1']);
-      // watchRTC.addKeys({ key1: 'value1', peer: name + '_custom string' });
-    }, 25000);
   };
 
   const getCustomKeys = () => {
