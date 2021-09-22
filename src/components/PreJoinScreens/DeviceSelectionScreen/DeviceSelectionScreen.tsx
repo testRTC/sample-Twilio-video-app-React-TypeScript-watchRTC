@@ -82,6 +82,7 @@ export default function DeviceSelectionScreen({ name, roomName, setStep }: Devic
         ...(getCustomKeys() || {}),
       },
     });
+
     getToken(name, roomName).then(token => connect(token));
   };
 
