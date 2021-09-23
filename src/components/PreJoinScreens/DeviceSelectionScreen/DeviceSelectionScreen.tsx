@@ -96,10 +96,8 @@ export default function DeviceSelectionScreen({ name, roomName, setStep }: Devic
       if (typeof keys === 'string') {
         keys = [keys];
       }
-
       // filter empty keys
       keys = keys?.filter(x => !!x && x?.indexOf(':') !== -1);
-
       const result: any = {};
       keys.forEach(x => {
         const splitted = x.split(':');
