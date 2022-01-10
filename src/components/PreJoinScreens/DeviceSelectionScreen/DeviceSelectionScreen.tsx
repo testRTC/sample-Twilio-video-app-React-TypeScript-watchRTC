@@ -85,7 +85,7 @@ export default function DeviceSelectionScreen({ name, roomName, setStep }: Devic
 
     setTimeout(() => {
       watchRTC.addKeys({ peer: name });
-    }, 5000);
+    }, 4000);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
