@@ -68,6 +68,13 @@ export default function App() {
         });
       });
     }
+    if (urlParams.has('state') && Boolean(urlParams.get('state'))) {
+      watchRTC.addStateListener(state => {
+        console.log('%cSTATE', `background: ${'orange'}; color: black; padding: 2px 0.5em; border-radius: 0.5em;`, {
+          state,
+        });
+      });
+    }
   }, []);
 
   return (
