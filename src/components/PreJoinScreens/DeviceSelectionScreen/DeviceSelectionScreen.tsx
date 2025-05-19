@@ -59,9 +59,15 @@ interface DeviceSelectionScreenProps {
   name: string;
   roomName: string;
   setStep: (step: Steps) => void;
+  captureFeedback: boolean;
 }
 
-export default function DeviceSelectionScreen({ name, roomName, setStep }: DeviceSelectionScreenProps) {
+export default function DeviceSelectionScreen({
+  name,
+  roomName,
+  setStep,
+  captureFeedback,
+}: DeviceSelectionScreenProps) {
   const classes = useStyles();
   const { getToken, isFetching } = useAppState();
   const { connect, isAcquiringLocalTracks, isConnecting } = useVideoContext();
@@ -112,24 +118,27 @@ export default function DeviceSelectionScreen({ name, roomName, setStep }: Devic
   const handleJoin = () => {
     getToken(name, roomName).then(token => connect(token));
 
-    setTimeout(() => {
-      let rating = (Math.floor(Math.random() * 5) + 1) as any;
-      let message = `User rating is ${rating}`;
-      console.log('random rating', { rating, message });
+    if (captureFeedback) {
+      console.log('rating is being captured ====== ');
+      setTimeout(() => {
+        let rating = (Math.floor(Math.random() * 5) + 1) as any;
+        let message = `User rating is ${rating}`;
+        console.log('random rating', { rating, message });
 
-      const ratingFromQuery = queryString.parse(window.location.search)?.rating;
-      const ratingMessageFromQuery = queryString.parse(window.location.search)?.ratingMessage;
-      console.log('ratingFromQuery', { ratingFromQuery, ratingMessageFromQuery });
+        const ratingFromQuery = queryString.parse(window.location.search)?.rating;
+        const ratingMessageFromQuery = queryString.parse(window.location.search)?.ratingMessage;
+        console.log('ratingFromQuery', { ratingFromQuery, ratingMessageFromQuery });
 
-      if (typeof ratingFromQuery === 'string' && Number(ratingFromQuery)) {
-        rating = Number(ratingFromQuery);
-      }
-      if (typeof ratingMessageFromQuery === 'string') {
-        message = decodeURI(ratingMessageFromQuery);
-      }
-      console.log('rating', { rating, message });
-      watchRTC.setUserRating(rating, message);
-    }, 29000);
+        if (typeof ratingFromQuery === 'string' && Number(ratingFromQuery)) {
+          rating = Number(ratingFromQuery);
+        }
+        if (typeof ratingMessageFromQuery === 'string') {
+          message = decodeURI(ratingMessageFromQuery);
+        }
+        console.log('rating', { rating, message });
+        watchRTC.setUserRating(rating, message);
+      }, 29000);
+    }
   };
 
   const getCustomKeys = () => {
