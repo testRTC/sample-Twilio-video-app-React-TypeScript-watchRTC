@@ -119,7 +119,6 @@ export default function DeviceSelectionScreen({
     getToken(name, roomName).then(token => connect(token));
 
     if (captureFeedback) {
-      console.log('rating is being captured ====== ');
       setTimeout(() => {
         let rating = (Math.floor(Math.random() * 5) + 1) as any;
         let message = `User rating is ${rating}`;
