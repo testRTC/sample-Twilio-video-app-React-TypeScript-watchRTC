@@ -127,7 +127,7 @@ export default function RoomNameScreen({
               />
             </div>
           </div>
-          <div className={classes.checkboxContainer}>
+          <div>
             <FormControlLabel
               control={<Checkbox checked={isChecked} onChange={handleCheckboxChange} color="primary" />}
               label="Capture Rating"
