@@ -22,6 +22,7 @@ export default function PreJoinScreens() {
 
   const [name, setName] = useState<string>(user?.displayName || '');
   const [roomName, setRoomName] = useState<string>('');
+  const [captureFeedback, setCaptureFeedback] = useState<boolean>(false);
 
   const [mediaError, setMediaError] = useState<Error>();
 
@@ -69,11 +70,12 @@ export default function PreJoinScreens() {
           setName={setName}
           setRoomName={setRoomName}
           handleSubmit={handleSubmit}
+          setCaptureFeedback={setCaptureFeedback}
         />
       )}
 
       {step === Steps.deviceSelectionStep && (
-        <DeviceSelectionScreen name={name} roomName={roomName} setStep={setStep} />
+        <DeviceSelectionScreen name={name} roomName={roomName} setStep={setStep} captureFeedback={captureFeedback} />
       )}
     </IntroContainer>
   );
