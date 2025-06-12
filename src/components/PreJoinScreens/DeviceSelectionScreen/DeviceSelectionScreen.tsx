@@ -142,22 +142,17 @@ export default function DeviceSelectionScreen({
 
   const getCustomKeys = () => {
     try {
-      let keys = queryString.parse(window.location.search)?.key;
-      if (!keys) {
+      const params = new URLSearchParams(window.location.search);
+      const encodedData = params.get('key');
+
+      if (!encodedData) {
         return {};
       }
-      // if search query has only one 'key' it returns string and not array
-      if (typeof keys === 'string') {
-        keys = [keys];
-      }
-      // filter empty keys
-      keys = keys?.filter(x => !!x && x?.indexOf(':') !== -1);
-      const result: any = {};
-      keys.forEach(x => {
-        const splitted = x.split(':');
-        result[splitted[0]] = splitted[1];
-      });
-      return result;
+
+      const decodedData = decodeURIComponent(encodedData);
+      let keys = JSON.parse(decodedData);
+
+      return keys;
     } catch (err) {
       // @ts-ignore
       console.error(err.message);
