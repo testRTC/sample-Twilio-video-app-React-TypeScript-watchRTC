@@ -81,11 +81,24 @@ export default function DeviceSelectionScreen({
     console.log('proxyUrl', proxyUrl);
   }
 
+  const decodeIfEncoded = (str: string) => {
+    try {
+      const decodedStr = decodeURIComponent(str);
+      if (encodeURIComponent(decodedStr) === str) {
+        return decodedStr;
+      } else {
+        return str;
+      }
+    } catch (e) {
+      return str;
+    }
+  };
+
   const wrtcConfig = {
     rtcApiKey:
       (queryString.parse(window.location.search)?.apiKey as string) || (process.env.REACT_APP_RTC_API_KEY as string),
-    rtcRoomId: roomName,
-    rtcPeerId: name,
+    rtcRoomId: decodeIfEncoded(roomName),
+    rtcPeerId: decodeIfEncoded(name),
     keys: {
       searchPeer: name,
     },
