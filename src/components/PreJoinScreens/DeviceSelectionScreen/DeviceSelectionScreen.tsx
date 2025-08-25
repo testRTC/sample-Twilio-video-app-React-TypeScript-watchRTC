@@ -100,7 +100,7 @@ export default function DeviceSelectionScreen({
     rtcRoomId: decodeIfEncoded(roomName),
     rtcPeerId: decodeIfEncoded(name),
     keys: {
-      searchPeer: name,
+      searchPeer: decodeIfEncoded(name),
     },
     logLevel: logLevelQueryParam,
     proxyUrl,
@@ -126,7 +126,7 @@ export default function DeviceSelectionScreen({
     // });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [roomName, name]);
 
   const handleJoin = () => {
     getToken(name, roomName).then(token => connect(token));
