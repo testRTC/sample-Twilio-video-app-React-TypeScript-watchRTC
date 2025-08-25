@@ -94,21 +94,24 @@ export default function DeviceSelectionScreen({
     }
   };
 
-  const wrtcConfig = {
-    rtcApiKey:
-      (queryString.parse(window.location.search)?.apiKey as string) || (process.env.REACT_APP_RTC_API_KEY as string),
-    rtcRoomId: decodeIfEncoded(roomName),
-    rtcPeerId: decodeIfEncoded(name),
-    keys: {
-      searchPeer: name,
-    },
-    logLevel: logLevelQueryParam,
-    proxyUrl,
-    // console: {
-    //   level: 'log',
-    //   override: true,
-    // },
-  };
+  const wrtcConfig = React.useMemo(
+    () => ({
+      rtcApiKey:
+        (queryString.parse(window.location.search)?.apiKey as string) || (process.env.REACT_APP_RTC_API_KEY as string),
+      rtcRoomId: decodeIfEncoded(roomName),
+      rtcPeerId: decodeIfEncoded(name),
+      keys: {
+        searchPeer: decodeIfEncoded(name),
+      },
+      logLevel: logLevelQueryParam,
+      proxyUrl,
+      // console: {
+      //   level: 'log',
+      //   override: true,
+      // },
+    }),
+    [roomName, name, logLevelQueryParam, proxyUrl]
+  );
 
   React.useEffect(() => {
     watchRTC.setConfig({
@@ -126,7 +129,7 @@ export default function DeviceSelectionScreen({
     // });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [wrtcConfig]);
 
   const handleJoin = () => {
     getToken(name, roomName).then(token => connect(token));
