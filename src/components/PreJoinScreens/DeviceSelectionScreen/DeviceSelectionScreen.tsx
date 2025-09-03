@@ -241,7 +241,7 @@ export default function DeviceSelectionScreen({
 
   return (
     <>
-      <Typography variant="h5" className={classes.gutterBottom}>
+      <Typography variant={roomName.length > 50 ? 'caption' : 'h5'} className={classes.gutterBottom}>
         Join {roomName}
       </Typography>
 
