@@ -1,9 +1,14 @@
 import React from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
+import watchRTC from '@testrtc/watchrtc-sdk';
+
 import Button from '@material-ui/core/Button';
 import EndCallButton from '../Buttons/EndCallButton/EndCallButton';
 import { isMobile } from '../../utils';
+import NailUpEndCallButton from '../Buttons/NailUpEndCallButton/NailUpEndCallButton';
+import NailUpJoinCallButton from '../Buttons/NailUpJoinCallButton/NailUpJoinCallButton';
+import FlipCameraButton from './FlipCameraButton/FlipCameraButton';
 import Menu from './Menu/Menu';
 import useParticipants from '../../hooks/useParticipants/useParticipants';
 import useRoomState from '../../hooks/useRoomState/useRoomState';
@@ -14,6 +19,9 @@ import ToggleChatButton from '../Buttons/ToggleChatButton/ToggleChatButton';
 import ToggleVideoButton from '../Buttons/ToggleVideoButton/ToggleVideoButton';
 import ToggleScreenShareButton from '../Buttons/ToogleScreenShareButton/ToggleScreenShareButton';
 import ToggleCaptionsButton from '../Buttons/ToggleCaptionsButton/ToggleCaptionsButton';
+import ToggleStatsButton from '../Buttons/ToggleStatsButton/ToggleStatsButton';
+import ConnectWSButton from '../Buttons/ConnectWSButton/ConnectWSButton';
+import DisconnectWSButton from '../Buttons/DisconnectWSButton/DisconnectWSButton';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -72,12 +80,17 @@ export default function MenuBar() {
   const { room } = useVideoContext();
   const participants = useParticipants();
 
+  const handleStopSharing = () => {
+    toggleScreenShare();
+    watchRTC.addEvent({ type: 'local', name: 'Stop Sharing' });
+  };
+
   return (
     <>
       {isSharingScreen && (
         <Grid container justifyContent="center" alignItems="center" className={classes.screenShareBanner}>
           <Typography variant="h6">You are sharing your screen</Typography>
-          <Button onClick={() => toggleScreenShare()}>Stop Sharing</Button>
+          <Button onClick={() => handleStopSharing()}>Stop Sharing</Button>
         </Grid>
       )}
       <footer className={classes.container}>
@@ -104,7 +117,13 @@ export default function MenuBar() {
           <Hidden smDown>
             <Grid style={{ flex: 1 }}>
               <Grid container justifyContent="flex-end">
+                <Menu />
                 <EndCallButton />
+                <NailUpEndCallButton />
+                <NailUpJoinCallButton />
+                <ToggleStatsButton />
+                <ConnectWSButton />
+                <DisconnectWSButton />
               </Grid>
             </Grid>
           </Hidden>

@@ -1,0 +1,18 @@
+[dev]
+  port=8080
+
+[build]
+  functions = "functions/"
+  publish = "build/"
+  command = "npm run build"
+
+[[redirects]]
+  from = "/token/*"
+  to = "/.netlify/functions/get-token?identity=:identity&roomName=:roomName"
+  query = {identity = ":identity", roomName = ":roomName"}
+  status = 302
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

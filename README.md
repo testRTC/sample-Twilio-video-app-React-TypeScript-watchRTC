@@ -1,6 +1,24 @@
-# Twilio Video React App
+# Twilio Video React App with watchRTC SDK
 
 [![CircleCI](https://circleci.com/gh/twilio/twilio-video-app-react.svg?style=svg)](https://circleci.com/gh/twilio/twilio-video-app-react)
+
+## Quick Setup
+
+- yarn install
+- paste your values in .env file
+- yarn start
+
+## watchRTC SDK usage
+
+![Code injection Preview](./watchRTC-injection.png)
+
+- start sample
+- join a Room
+- duplicate tab
+- join a Room with another Name
+- stop call for all the tabs
+
+Results will appear in watchRTC section in main app
 
 ## What is it
 
