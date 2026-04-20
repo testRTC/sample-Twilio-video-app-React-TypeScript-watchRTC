@@ -1,21 +1,19 @@
 import React from 'react';
 import MediaErrorSnackBar, { getSnackbarContent } from './MediaErrorSnackbar';
 import { shallow } from 'enzyme';
-import { useHasAudioInputDevices, useHasVideoInputDevices } from '../../../hooks/deviceHooks/deviceHooks';
+import useDevices from '../../../hooks/useDevices/useDevices';
 import useVideoContext from '../../../hooks/useVideoContext/useVideoContext';
 
 jest.mock('../../../hooks/useVideoContext/useVideoContext');
-jest.mock('../../../hooks/deviceHooks/deviceHooks');
+jest.mock('../../../hooks/useDevices/useDevices');
 
 const mockUseVideoContext = useVideoContext as jest.Mock<any>;
-const mockUseHasAudioInputDevices = useHasAudioInputDevices as jest.Mock<any>;
-const mockUseHasVideoInputDevices = useHasVideoInputDevices as jest.Mock<any>;
+const mockUseDevices = useDevices as jest.Mock<any>;
 
 describe('the MediaErrorSnackBar', () => {
   beforeEach(() => {
     mockUseVideoContext.mockImplementation(() => ({ isAcquiringLocalTracks: false }));
-    mockUseHasAudioInputDevices.mockImplementation(() => true);
-    mockUseHasVideoInputDevices.mockImplementation(() => true);
+    mockUseDevices.mockImplementation(() => ({ hasAudioInputDevices: true, hasVideoInputDevices: true }));
   });
 
   it('should be closed by default', () => {
@@ -29,13 +27,13 @@ describe('the MediaErrorSnackBar', () => {
   });
 
   it('should open when there are no audio devices', () => {
-    mockUseHasAudioInputDevices.mockImplementationOnce(() => false);
+    mockUseDevices.mockImplementation(() => ({ hasAudioInputDevices: false, hasVideoInputDevices: true }));
     const wrapper = shallow(<MediaErrorSnackBar />);
     expect(wrapper.prop('open')).toBe(true);
   });
 
   it('should open when there are no video devices', () => {
-    mockUseHasVideoInputDevices.mockImplementationOnce(() => false);
+    mockUseDevices.mockImplementation(() => ({ hasAudioInputDevices: true, hasVideoInputDevices: false }));
     const wrapper = shallow(<MediaErrorSnackBar />);
     expect(wrapper.prop('open')).toBe(true);
   });
@@ -58,7 +56,7 @@ describe('the getSnackbarContent function', () => {
   it('return empty strings by default', () => {
     const results = getSnackbarContent(true, true);
     expect(results).toMatchInlineSnapshot(`
-      Object {
+      {
         "headline": "",
         "message": "",
       }
@@ -68,7 +66,7 @@ describe('the getSnackbarContent function', () => {
   it('should return the correct content when there are no audio devices', () => {
     const results = getSnackbarContent(false, true);
     expect(results).toMatchInlineSnapshot(`
-      Object {
+      {
         "headline": "No Microphone Detected:",
         "message": "Other participants in the room will be unable to hear you.",
       }
@@ -78,7 +76,7 @@ describe('the getSnackbarContent function', () => {
   it('should return the correct content when there are no video devices', () => {
     const results = getSnackbarContent(true, false);
     expect(results).toMatchInlineSnapshot(`
-      Object {
+      {
         "headline": "No Camera Detected:",
         "message": "Other participants in the room will be unable to see you.",
       }
@@ -88,7 +86,7 @@ describe('the getSnackbarContent function', () => {
   it('should return the correct content when there are no audio or video devices', () => {
     const results = getSnackbarContent(false, false);
     expect(results).toMatchInlineSnapshot(`
-      Object {
+      {
         "headline": "No Camera or Microphone Detected:",
         "message": "Other participants in the room will be unable to see and hear you.",
       }
@@ -100,7 +98,7 @@ describe('the getSnackbarContent function', () => {
     error.name = 'NotAllowedError';
     const results = getSnackbarContent(true, true, error);
     expect(results).toMatchInlineSnapshot(`
-      Object {
+      {
         "headline": "Unable to Access Media:",
         "message": "The user has denied permission to use audio and video. Please grant permission to the browser to access the microphone and camera.",
       }
@@ -112,7 +110,7 @@ describe('the getSnackbarContent function', () => {
     error.name = 'NotAllowedError';
     const results = getSnackbarContent(true, true, error);
     expect(results).toMatchInlineSnapshot(`
-      Object {
+      {
         "headline": "Unable to Access Media:",
         "message": "The operating system has blocked the browser from accessing the microphone or camera. Please check your operating system settings.",
       }
@@ -124,7 +122,7 @@ describe('the getSnackbarContent function', () => {
     error.name = 'NotFoundError';
     const results = getSnackbarContent(true, true, error);
     expect(results).toMatchInlineSnapshot(`
-      Object {
+      {
         "headline": "Cannot Find Microphone or Camera:",
         "message": "The browser cannot access the microphone or camera. Please make sure all input devices are connected and enabled.",
       }
@@ -136,9 +134,31 @@ describe('the getSnackbarContent function', () => {
     error.name = 'OtherDeviceError';
     const results = getSnackbarContent(true, true, error);
     expect(results).toMatchInlineSnapshot(`
-      Object {
+      {
         "headline": "Error Acquiring Media:",
         "message": "OtherDeviceError Any other device errors",
+      }
+    `);
+  });
+
+  it('should return the correct content when there is a CameraPermissionsDenied error', () => {
+    const error = new Error('CameraPermissionsDenied');
+    const results = getSnackbarContent(true, true, error);
+    expect(results).toMatchInlineSnapshot(`
+      {
+        "headline": "Unable to Access Media:",
+        "message": "The user has denied permission to use video. Please grant permission to the browser to access the camera.",
+      }
+    `);
+  });
+
+  it('should return the correct content when there is a MicrophonePermissionsDenied error', () => {
+    const error = new Error('MicrophonePermissionsDenied');
+    const results = getSnackbarContent(true, true, error);
+    expect(results).toMatchInlineSnapshot(`
+      {
+        "headline": "Unable to Access Media:",
+        "message": "The user has denied permission to use audio. Please grant permission to the browser to access the microphone.",
       }
     `);
   });

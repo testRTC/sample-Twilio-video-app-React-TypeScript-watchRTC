@@ -52,9 +52,16 @@ describe('the VideoTrack component', () => {
     expect(mockTrack.detach).toHaveBeenCalledWith(expect.any(window.HTMLVideoElement));
   });
 
+  it('should set the video elements srcObject to null when the component unmounts', () => {
+    const { unmount, container } = render(<VideoTrack track={mockTrack} />);
+    const videoEl = container.querySelector('video')!;
+    unmount();
+    expect(videoEl.srcObject).toBe(null);
+  });
+
   it('should flip the video horizontally if the track is local', () => {
     const { container } = render(<VideoTrack track={mockTrack} isLocal />);
-    expect(container.querySelector('video')!.style.transform).toEqual('rotateY(180deg)');
+    expect(container.querySelector('video')!.style.transform).toEqual('scaleX(-1)');
   });
 
   it('should not flip the video horizontally if the track is the local rear-facing camera', () => {

@@ -4,8 +4,8 @@ import { render } from '@testing-library/react';
 import { useAppState } from '../../state';
 
 jest.mock('twilio-video', () => ({ version: '1.2', isSupported: true }));
-jest.mock('../../../package.json', () => ({ version: '1.3' }));
 jest.mock('../../state');
+jest.mock('../../../package.json', () => ({ version: '1.3' }));
 
 const mockUseAppState = useAppState as jest.Mock<any>;
 mockUseAppState.mockImplementation(() => ({ roomType: undefined }));
@@ -22,6 +22,7 @@ describe('the AboutDialog component', () => {
   });
 
   it('should display the package.json version', () => {
+    process.env.REACT_APP_VERSION = '1.3';
     const { getByText } = render(<AboutDialog open={true} onClose={() => {}} />);
     expect(getByText('App Version: 1.3')).toBeTruthy();
   });

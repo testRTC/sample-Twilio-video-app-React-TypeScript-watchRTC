@@ -12,6 +12,8 @@ import LoginPage from './components/LoginPage/LoginPage';
 import PrivateRoute from './components/PrivateRoute/PrivateRoute';
 import theme from './theme';
 import './types';
+import { ChatProvider } from './components/ChatProvider';
+import { ParticipantProvider } from './components/ParticipantProvider';
 import { VideoProvider } from './components/VideoProvider';
 import useConnectionOptions from './utils/useConnectionOptions/useConnectionOptions';
 import UnsupportedBrowserWarning from './components/UnsupportedBrowserWarning/UnsupportedBrowserWarning';
@@ -21,34 +23,39 @@ const VideoApp = () => {
   const connectionOptions = useConnectionOptions();
 
   return (
-    <UnsupportedBrowserWarning>
-      <VideoProvider options={connectionOptions} onError={setError}>
-        <ErrorDialog dismissError={() => setError(null)} error={error} />
-        <App />
-      </VideoProvider>
-    </UnsupportedBrowserWarning>
+    <VideoProvider options={connectionOptions} onError={setError}>
+      <ErrorDialog dismissError={() => setError(null)} error={error} />
+      <ParticipantProvider>
+        <ChatProvider>
+          <App />
+        </ChatProvider>
+      </ParticipantProvider>
+    </VideoProvider>
   );
 };
 
-ReactDOM.render(
+export const ReactApp = () => (
   <MuiThemeProvider theme={theme}>
     <CssBaseline />
-    <Router>
-      <AppStateProvider>
-        <Switch>
-          <PrivateRoute exact path="/">
-            <VideoApp />
-          </PrivateRoute>
-          <PrivateRoute path="/room/:URLRoomName">
-            <VideoApp />
-          </PrivateRoute>
-          <Route path="/login">
-            <LoginPage />
-          </Route>
-          <Redirect to="/" />
-        </Switch>
-      </AppStateProvider>
-    </Router>
-  </MuiThemeProvider>,
-  document.getElementById('root')
+    <UnsupportedBrowserWarning>
+      <Router>
+        <AppStateProvider>
+          <Switch>
+            <PrivateRoute exact path="/">
+              <VideoApp />
+            </PrivateRoute>
+            <PrivateRoute path="/room/:URLRoomName">
+              <VideoApp />
+            </PrivateRoute>
+            <Route path="/login">
+              <LoginPage />
+            </Route>
+            <Redirect to="/" />
+          </Switch>
+        </AppStateProvider>
+      </Router>
+    </UnsupportedBrowserWarning>
+  </MuiThemeProvider>
 );
+
+ReactDOM.render(<ReactApp />, document.getElementById('root'));

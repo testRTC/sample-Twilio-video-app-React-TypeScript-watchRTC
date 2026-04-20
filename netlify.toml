@@ -6,11 +6,18 @@
   publish = "build/"
   command = "npm run build"
 
+# /token/* does not match /token; 200 rewrite preserves query string for the function.
+[[redirects]]
+  from = "/token"
+  to = "/.netlify/functions/get-token"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/token/*"
-  to = "/.netlify/functions/get-token?identity=:identity&roomName=:roomName"
-  query = {identity = ":identity", roomName = ":roomName"}
-  status = 302
+  to = "/.netlify/functions/get-token"
+  status = 200
+  force = true
 
 [[redirects]]
   from = "/*"

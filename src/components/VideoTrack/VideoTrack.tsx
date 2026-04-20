@@ -31,6 +31,11 @@ export default function VideoTrack({ track, isLocal, priority }: VideoTrackProps
     track.attach(el);
     return () => {
       track.detach(el);
+
+      // This addresses a Chrome issue where the number of WebMediaPlayers is limited.
+      // See: https://github.com/twilio/twilio-video.js/issues/1528
+      el.srcObject = null;
+
       if (track.setPriority && priority) {
         // Passing `null` to setPriority will set the track's priority to that which it was published with.
         track.setPriority('high');
@@ -41,7 +46,7 @@ export default function VideoTrack({ track, isLocal, priority }: VideoTrackProps
   // The local video track is mirrored if it is not facing the environment.
   const isFrontFacing = mediaStreamTrack?.getSettings().facingMode !== 'environment';
   const style = {
-    transform: isLocal && isFrontFacing ? 'rotateY(180deg)' : '',
+    transform: isLocal && isFrontFacing ? 'scaleX(-1)' : '',
     objectFit: isPortrait || track.name.includes('screen') ? ('contain' as const) : ('cover' as const),
   };
 

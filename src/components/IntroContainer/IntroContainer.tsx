@@ -22,7 +22,8 @@ const useStyles = makeStyles((theme: Theme) => ({
   innerContainer: {
     display: 'flex',
     width: '888px',
-    height: '379px',
+    minHeight: '379px',
+    height: 'auto',
     borderRadius: '8px',
     boxShadow: '0px 2px 4px 0px rgba(40, 42, 43, 0.3)',
     overflow: 'hidden',
@@ -30,6 +31,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     margin: 'auto',
     [theme.breakpoints.down('sm')]: {
       display: 'block',
+      minHeight: 'unset',
       height: 'auto',
       width: 'calc(100% - 40px)',
       margin: 'auto',
@@ -73,7 +75,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   content: {
     background: 'white',
     width: '100%',
-    padding: '4em',
+    padding: '3em 4em',
     flex: 1,
     [theme.breakpoints.down('sm')]: {
       padding: '2em',
@@ -87,16 +89,10 @@ const useStyles = makeStyles((theme: Theme) => ({
       fontSize: '1.1rem',
     },
   },
-  subContentContainer: {
-    position: 'absolute',
-    marginTop: '1em',
-    width: '100%',
-  },
 }));
 
 interface IntroContainerProps {
   children: React.ReactNode;
-  subContent?: React.ReactNode;
 }
 
 const IntroContainer = (props: IntroContainerProps) => {
@@ -120,7 +116,6 @@ const IntroContainer = (props: IntroContainerProps) => {
           </div>
           <div className={classes.content}>{props.children}</div>
         </div>
-        {props.subContent && <div className={classes.subContentContainer}>{props.subContent}</div>}
       </div>
     </div>
   );

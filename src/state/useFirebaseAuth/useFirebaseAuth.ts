@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import * as firebase from 'firebase/app';
-import 'firebase/auth';
+import { initializeApp } from 'firebase/app';
+import { getAuth, User, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -11,52 +11,85 @@ const firebaseConfig = {
 };
 
 export default function useFirebaseAuth() {
-  const [user, setUser] = useState<firebase.User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
 
   const getToken = useCallback(
-    async (identity: string, roomName: string) => {
+    async (user_identity: string, room_name: string) => {
       const headers = new window.Headers();
 
       const idToken = await user!.getIdToken();
       headers.set('Authorization', idToken);
+      headers.set('content-type', 'application/json');
 
       const endpoint = process.env.REACT_APP_TOKEN_ENDPOINT || '/token';
-      const params = new window.URLSearchParams({ identity, roomName });
 
-      return fetch(`${endpoint}?${params}`, { headers }).then(res => res.text());
+      return fetch(endpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          user_identity,
+          room_name,
+          create_conversation: process.env.REACT_APP_DISABLE_TWILIO_CONVERSATIONS !== 'true',
+        }),
+      }).then(res => res.json());
+    },
+    [user]
+  );
+
+  const updateRecordingRules = useCallback(
+    async (room_sid, rules) => {
+      const headers = new window.Headers();
+
+      const idToken = await user!.getIdToken();
+      headers.set('Authorization', idToken);
+      headers.set('content-type', 'application/json');
+
+      return fetch('/recordingrules', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ room_sid, rules }),
+      }).then(async res => {
+        const jsonResponse = await res.json();
+
+        if (!res.ok) {
+          const recordingError = new Error(
+            jsonResponse.error?.message || 'There was an error updating recording rules'
+          );
+          recordingError.code = jsonResponse.error?.code;
+          return Promise.reject(recordingError);
+        }
+
+        return jsonResponse;
+      });
     },
     [user]
   );
 
   useEffect(() => {
-    firebase.initializeApp(firebaseConfig);
-    firebase.auth().onAuthStateChanged(user => {
-      setUser(user);
+    initializeApp(firebaseConfig);
+    getAuth().onAuthStateChanged(newUser => {
+      setUser(newUser);
       setIsAuthReady(true);
     });
   }, []);
 
   const signIn = useCallback(() => {
-    const provider = new firebase.auth.GoogleAuthProvider();
+    const provider = new GoogleAuthProvider();
     provider.addScope('https://www.googleapis.com/auth/plus.login');
 
-    return firebase
-      .auth()
-      .signInWithPopup(provider)
-      .then(user => {
-        setUser(user.user);
-      });
+    return signInWithPopup(getAuth(), provider).then(newUser => {
+      setUser(newUser.user);
+    });
   }, []);
 
   const signOut = useCallback(() => {
-    return firebase
-      .auth()
+    return getAuth()
       .signOut()
       .then(() => {
         setUser(null);
       });
   }, []);
 
-  return { user, signIn, signOut, isAuthReady, getToken };
+  return { user, signIn, signOut, isAuthReady, getToken, updateRecordingRules };
 }

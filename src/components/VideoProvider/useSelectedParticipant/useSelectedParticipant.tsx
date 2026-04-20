@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Participant, Room } from 'twilio-video';
+import { useAppState } from '../../../state';
 
 type selectedParticipantContextType = [Participant | null, (participant: Participant) => void];
 
@@ -11,26 +12,35 @@ export default function useSelectedParticipant() {
 }
 
 type SelectedParticipantProviderProps = {
-  room: Room;
+  room: Room | null;
   children: React.ReactNode;
 };
 
 export function SelectedParticipantProvider({ room, children }: SelectedParticipantProviderProps) {
+  const { isGalleryViewActive } = useAppState();
   const [selectedParticipant, _setSelectedParticipant] = useState<Participant | null>(null);
   const setSelectedParticipant = (participant: Participant) =>
     _setSelectedParticipant(prevParticipant => (prevParticipant === participant ? null : participant));
 
   useEffect(() => {
-    const onDisconnect = () => _setSelectedParticipant(null);
-    const handleParticipantDisconnected = (participant: Participant) =>
-      _setSelectedParticipant(prevParticipant => (prevParticipant === participant ? null : prevParticipant));
+    if (isGalleryViewActive) {
+      _setSelectedParticipant(null);
+    }
+  }, [isGalleryViewActive]);
 
-    room.on('disconnected', onDisconnect);
-    room.on('participantDisconnected', handleParticipantDisconnected);
-    return () => {
-      room.off('disconnected', onDisconnect);
-      room.off('participantDisconnected', handleParticipantDisconnected);
-    };
+  useEffect(() => {
+    if (room) {
+      const onDisconnect = () => _setSelectedParticipant(null);
+      const handleParticipantDisconnected = (participant: Participant) =>
+        _setSelectedParticipant(prevParticipant => (prevParticipant === participant ? null : prevParticipant));
+
+      room.on('disconnected', onDisconnect);
+      room.on('participantDisconnected', handleParticipantDisconnected);
+      return () => {
+        room.off('disconnected', onDisconnect);
+        room.off('participantDisconnected', handleParticipantDisconnected);
+      };
+    }
   }, [room]);
 
   return (

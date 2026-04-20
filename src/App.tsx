@@ -7,6 +7,7 @@ import MenuBar from './components/MenuBar/MenuBar';
 import MobileTopMenuBar from './components/MobileTopMenuBar/MobileTopMenuBar';
 import PreJoinScreens from './components/PreJoinScreens/PreJoinScreens';
 import ReconnectingNotification from './components/ReconnectingNotification/ReconnectingNotification';
+import RecordingNotifications from './components/RecordingNotifications/RecordingNotifications';
 import Room from './components/Room/Room';
 
 import useHeight from './hooks/useHeight/useHeight';
@@ -84,6 +85,7 @@ export default function App() {
       ) : (
         <Main>
           <ReconnectingNotification />
+          <RecordingNotifications />
           <MobileTopMenuBar />
           <Room />
           <MenuBar />

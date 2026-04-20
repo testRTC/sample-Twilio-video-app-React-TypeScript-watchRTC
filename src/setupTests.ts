@@ -11,7 +11,7 @@ class LocalStorage {
   store = {} as { [key: string]: string };
 
   getItem(key: string) {
-    return this.store[key];
+    return this.store[key] ? this.store[key] : null;
   }
 
   setItem(key: string, value: string) {
@@ -24,3 +24,6 @@ class LocalStorage {
 }
 
 Object.defineProperty(window, 'localStorage', { value: new LocalStorage() });
+
+// This is to suppress the "Platform browser has already been set." warnings from the video-processors library
+jest.mock('@twilio/video-processors', () => ({}));

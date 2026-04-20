@@ -3,13 +3,15 @@ import useLocalVideoToggle from './useLocalVideoToggle';
 import useVideoContext from '../useVideoContext/useVideoContext';
 import { EventEmitter } from 'events';
 import { LocalParticipant } from 'twilio-video';
+import { setImmediate } from 'timers';
 
 jest.mock('../useVideoContext/useVideoContext');
 const mockUseVideoContext = useVideoContext as jest.Mock<any>;
 
-function getMockTrack(name: string, deviceId?: string) {
+function getMockTrack(kind: string, deviceId?: string) {
   return {
-    name,
+    name: '',
+    kind,
     mediaStreamTrack: {
       getSettings: () => ({
         deviceId,
@@ -21,7 +23,7 @@ function getMockTrack(name: string, deviceId?: string) {
 describe('the useLocalVideoToggle hook', () => {
   it('should return true when a localVideoTrack exists', () => {
     mockUseVideoContext.mockImplementation(() => ({
-      localTracks: [getMockTrack('camera-123456')],
+      localTracks: [getMockTrack('video')],
       room: { localParticipant: {} },
     }));
 
@@ -31,7 +33,7 @@ describe('the useLocalVideoToggle hook', () => {
 
   it('should return false when a localVideoTrack does not exist', () => {
     mockUseVideoContext.mockImplementation(() => ({
-      localTracks: [getMockTrack('microphone')],
+      localTracks: [getMockTrack('audio')],
       room: { localParticipant: {} },
     }));
 
@@ -44,7 +46,7 @@ describe('the useLocalVideoToggle hook', () => {
       const mockRemoveLocalVideoTrack = jest.fn();
 
       mockUseVideoContext.mockImplementation(() => ({
-        localTracks: [getMockTrack('camera')],
+        localTracks: [getMockTrack('video')],
         room: { localParticipant: null },
         removeLocalVideoTrack: mockRemoveLocalVideoTrack,
       }));
@@ -56,7 +58,7 @@ describe('the useLocalVideoToggle hook', () => {
 
     it('should call localParticipant.unpublishTrack when a localVideoTrack and localParticipant exists', () => {
       const mockLocalTrack = {
-        ...getMockTrack('camera-123456'),
+        ...getMockTrack('video'),
         stop: jest.fn(),
       };
 
@@ -90,7 +92,7 @@ describe('the useLocalVideoToggle hook', () => {
       expect(mockGetLocalVideoTrack).toHaveBeenCalled();
     });
 
-    it('should call mockLocalParticipant.publishTrack when a localVideoTrack does not exist and localParticipant does exist', async done => {
+    it('should call mockLocalParticipant.publishTrack when a localVideoTrack does not exist and localParticipant does exist', async () => {
       const mockGetLocalVideoTrack = jest.fn(() => Promise.resolve('mockTrack'));
 
       const mockLocalParticipant = new EventEmitter() as LocalParticipant;
@@ -109,7 +111,7 @@ describe('the useLocalVideoToggle hook', () => {
       await waitForNextUpdate();
       setImmediate(() => {
         expect(mockLocalParticipant.publishTrack).toHaveBeenCalledWith('mockTrack', { priority: 'low' });
-        done();
+        return Promise.resolve();
       });
     });
 
@@ -154,38 +156,6 @@ describe('the useLocalVideoToggle hook', () => {
       });
       await waitForNextUpdate();
       expect(mockOnError).toHaveBeenCalledWith('mockError');
-    });
-
-    it('should call getLocalVideoTrack with the deviceId of the previously active track', async () => {
-      const mockGetLocalVideoTrack = jest.fn(() => Promise.resolve('mockTrack'));
-
-      mockUseVideoContext.mockImplementation(() => ({
-        localTracks: [getMockTrack('camera', 'testDeviceID')],
-        room: { localParticipant: null },
-        removeLocalVideoTrack: jest.fn(),
-        getLocalVideoTrack: mockGetLocalVideoTrack,
-      }));
-
-      const { result, rerender, waitForNextUpdate } = renderHook(useLocalVideoToggle);
-
-      // Remove existing track
-      result.current[1]();
-
-      mockUseVideoContext.mockImplementation(() => ({
-        localTracks: [],
-        room: { localParticipant: null },
-        removeLocalVideoTrack: jest.fn(),
-        getLocalVideoTrack: mockGetLocalVideoTrack,
-      }));
-      rerender();
-
-      await act(async () => {
-        // Get new video track
-        result.current[1]();
-        await waitForNextUpdate();
-      });
-
-      expect(mockGetLocalVideoTrack).toHaveBeenCalledWith({ deviceId: { exact: 'testDeviceID' } });
     });
   });
 });

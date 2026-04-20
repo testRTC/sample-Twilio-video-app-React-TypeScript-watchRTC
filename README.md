@@ -22,13 +22,13 @@ Results will appear in watchRTC section in main app
 
 ## What is it
 
-This application demonstrates a multi-party video application built with [twilio-video.js](https://github.com/twilio/twilio-video.js) and [Create React App](https://github.com/facebook/create-react-app).
+This application demonstrates a multi-party video application built with [Twilio's Programmable Video JS SDK](https://github.com/twilio/twilio-video.js), [Twilio's Conversations JS SDK](https://www.npmjs.com/package/@twilio/conversations), and [Create React App](https://github.com/facebook/create-react-app).
 
 - Deploy to [Twilio Serverless](https://www.twilio.com/docs/runtime/functions-assets-api) in just a few minutes
 - No other infrastructure is required
 - No code changes are required before your first deploy
 - There is no cost associated with deploying the app
-- Go Rooms usage is free, however [standard usage charges](https://www.twilio.com/video/pricing) apply when using the app with all other Room types.
+- [Standard usage charges](https://www.twilio.com/video/pricing) apply for Twilio Video when using the app for video calls. The chat feature is built using the Conversations API and is free-of-cost up to 200 monthly active users, [standard usage charges](https://www.twilio.com/conversations/pricing) apply thereafter.
 
 ![App Preview](https://user-images.githubusercontent.com/12685223/94631109-cfca1c80-0284-11eb-8b72-c97276cf34e4.png)
 
@@ -36,35 +36,67 @@ This application demonstrates a multi-party video application built with [twilio
 
 You must have the following installed:
 
-- [Node.js v12+](https://nodejs.org/en/download/)
-- NPM v6+ (comes installed with newer Node versions)
+- [Node.js v22+](https://nodejs.org/en/download/)
+- NPM v10+ (comes installed with newer Node versions)
+
+You can check which versions of Node.js and NPM you currently have installed with the following commands:
+
+    node --version
+    npm --version
+
+## Clone the repository
+
+Clone this repository and cd into the project directory:
+
+    git clone https://github.com/twilio/twilio-video-app-react.git
+    cd twilio-video-app-react
 
 ## Install Dependencies
 
-Run `npm install` to install all dependencies from NPM.
+Run `npm install` inside the main project folder to install all dependencies from NPM.
 
 If you want to use `yarn` to install dependencies, first run the [yarn import](https://classic.yarnpkg.com/en/docs/cli/import/) command. This will ensure that yarn installs the package versions that are specified in `package-lock.json`.
 
-## Install Twilio CLI
+### Add Noise Cancellation
 
-The app is deployed to Twilio using the Twilio CLI. Install twilio-cli with:
+Twilio Video has partnered with [Krisp Technologies Inc.](https://krisp.ai/) to add [noise cancellation](https://www.twilio.com/docs/video/noise-cancellation) to the local audio track. This feature is licensed under the [Krisp Plugin for Twilio](https://twilio.github.io/krisp-audio-plugin/LICENSE.html). In order to add this feature to your application, please run `npm run noisecancellation:krisp` immediately after the [previous step](#install-dependencies).
 
-    $ npm install -g twilio-cli
+### Add Captions
+
+The on-screen Captions functionality is provided by the [Real-Time Transcriptions for Video(beta)](https://www.twilio.com/docs/video/api/transcriptions) feature. To use captions in this reference application Real-Time Transcriptions must be enabled by default in the [Room settings page](https://console.twilio.com/us1/develop/video/manage/room-settings) on the Twilio Console. Note that usage charges will apply.
+
+### Install the Twilio CLI
+
+The app is deployed to Twilio using the Twilio CLI. You can [install the Twilio CLI using Homebrew on a Mac or npm](https://www.twilio.com/docs/twilio-cli/quickstart).
+
+To install twilio-cli using npm, run the following command:
+
+    npm install -g twilio-cli
+
+**Note**: If you run into permissions errors when installing the twilio-cli globally with the `npm install -g` command, you might need to change the permissions of your global `node_modules` directory or configure npm to use a different directory for globally installed npm packages. See [this StackOverflow thread](https://stackoverflow.com/a/51024493), which has more information about both options. This [code sample in GitHub](https://github.com/sindresorhus/guides/blob/main/npm-global-without-sudo.md) is also a helpful guide for how to install npm packages globally without needing to change directory permissions and without sudo.
+
+### Login to the Twilio CLI
 
 Login to the Twilio CLI. You will be prompted for your Account SID and Auth Token, both of which you can find on the dashboard of your [Twilio console](https://twilio.com/console).
 
-    $ twilio login
+    twilio login
+
+**Note**: If you installed the Twilio CLI using npm and you receive an error that the `twilio` command is not found, you might need to update your Node install prefix. See [this StackOverflow thread for more information](https://stackoverflow.com/a/15623632).
+
+### Install the RTC Plugin
 
 This app requires an additional plugin. Install the CLI plugin with:
 
-    $ twilio plugins:install @twilio-labs/plugin-rtc
+    twilio plugins:install @twilio-labs/plugin-rtc
+
+**Note:** If you have previously installed the `@twilio-labs/plugin-rtc` plugin, please make sure that you are using the most recent version. You can upgrade the plugin by running `twilio plugins:update`. The chat feature requires version 0.8.1 or greater of `@twilio-labs/plugin-rtc`.
 
 ## Deploy the app to Twilio
 
 Before deploying the app, make sure you are using the correct account on the Twilio CLI (using the command `twilio profiles:list` to check).
 The app is deployed to Twilio with a single command:
 
-    $ npm run deploy:twilio-cli
+    npm run deploy:twilio-cli
 
 This performs the following steps:
 
@@ -75,19 +107,21 @@ This performs the following steps:
 
 **NOTE:** The Twilio Function that provides access tokens via a passcode should _NOT_ be used in a production environment. This token server supports seamlessly getting started with the collaboration app, and while convenient, the passcode is not secure enough for production environments. You should use an authentication provider to securely provide access tokens to your client applications. You can find more information about Programmable Video access tokens [in this tutorial](https://www.twilio.com/docs/video/tutorials/user-identity-access-tokens). **As a precaution, the passcode will expire after one week**. To generate a new passcode, redeploy the app:
 
-    $ npm run deploy:twilio-cli -- --override
+    npm run deploy:twilio-cli -- --override
+
+**NOTE:** As of November 10th, 2025, Twilio Functions requires Node.js v20 or v22, see the [migration guide](https://www.twilio.com/docs/serverless/functions-assets/node-upgrade). If you previously deployed this Twilio Video React App using Node.js v18 then you either need to edit the Function entry in the Twilio Console and select node v22 or else delete the entry in the Twilio Console and redeploy from the command line. The node setting can be found in the Twilio Console in the Functions & Assets section -> Services and select the video-app-xxxx entry.
 
 ## View app details
 
 View the URL and passcode for the Video app with
 
-     $ twilio rtc:apps:video:view
+     twilio rtc:apps:video:view
 
 ## Delete the app
 
 Delete the app with
 
-    $ twilio rtc:apps:video:delete
+    twilio rtc:apps:video:delete
 
 This removes the Serverless app from Twilio. This will ensure that no further cost are incurred by the app.
 
@@ -99,31 +133,21 @@ If any errors occur after running a [Twilio CLI RTC Plugin](https://github.com/t
 1. Run `twilio rtc:apps:video:delete` to delete any existing video apps.
 1. Run `npm run deploy:twilio-cli` to deploy a new video app.
 
-## App Behavior with Different Room Types
-
-After running the command [to deploy a Twilio Access Token Server](https://github.com/twilio/twilio-video-app-android#deploy-twilio-access-token-server), the room type will be returned in the command line output. Each room type provides a different video experience. More details about these room types can be found [here](https://www.twilio.com/docs/video/tutorials/understanding-video-rooms). The rest of this section explains how these room types affect the behavior of the video app.
-
-_Group_ - The Group room type allows up to fifty participants to join a video room in the app. The Network Quality Level (NQL) indicators and dominant speaker are demonstrated with this room type. Also, the VP8 video codec with simulcast enabled along with a bandwidth profile are set by default in order to provide an optimal group video app experience.
-
-_Small Group_ - The Small Group room type provides an identical group video app experience except for a smaller limit of four participants.
-
-_Peer-to-peer_ - Although up to ten participants can join a room using the Peer-to-peer (P2P) room type, it is ideal for a one to one video experience. The NQL indicators, bandwidth profiles, and dominant speaker cannot be used with this room type. Thus, they are not demonstrated in the video app. Also, the VP8 video codec with simulcast disabled and 720p minimum video capturing dimensions are also set by default in order to provide an optimal one to one video app experience. If more than ten participants join a room with this room type, then the video app will present an error.
-
-_Go_ - The Go room type provides a similar Peer-to-peer video app experience except for a smaller limit of two participants. If more than two participants join a room with this room type, then the video app will present an error.
-
-If the max number of participants is exceeded, then the video app will present an error for all room types.
 
 ## Features
 
 The Video app has the following features:
 
-- [x] Video conferencing with real-time video and audio
+- [x] Video calling with real-time video and audio
+- [x] Chat support for textual and file-based messaging
 - [x] Enable/disable camera
 - [x] Mute/unmute mic
 - [x] Screen sharing
 - [x] [Dominant speaker](https://www.twilio.com/docs/video/detecting-dominant-speaker) indicator
 - [x] [Network quality](https://www.twilio.com/docs/video/using-network-quality-api) indicator
-- [x] [Bandwidth Profile API](https://www.twilio.com/docs/video/tutorials/using-bandwidth-profile-api)
+- [x] Defines participant bandwidth usage with the [Bandwidth Profile API](https://www.twilio.com/docs/video/tutorials/using-bandwidth-profile-api)
+- [x] Start and stop recording with the [Recording Rules API](https://www.twilio.com/docs/video/api/recording-rules)
+- [x] Virtual backgrounds with [Video Processor library](https://www.twilio.com/docs/video/video-processors)
 
 ## Browser Support
 
@@ -133,46 +157,48 @@ See browser support table for [twilio-video.js SDK](https://github.com/twilio/tw
 
 ### Running a local token server
 
-This application requires an access token to connect to a Room. The included local token [server](server.js) provides the application with access tokens. Perform the following steps to setup the local token server:
+This application requires an access token to connect to a Room for Video and a Conversation for Chat. The included local token [server](server/index.ts) provides the application with access tokens. This token server can be used to run the app locally, and it is the server that is used when this app is run in development mode with `npm start`. Perform the following steps to setup the local token server:
 
 - Create an account in the [Twilio Console](https://www.twilio.com/console).
 - Click on 'Settings' and take note of your Account SID.
 - Create a new API Key in the [API Keys Section](https://www.twilio.com/console/video/project/api-keys) under Programmable Video Tools in the Twilio Console. Take note of the SID and Secret of the new API key.
-- Store your Account SID, API Key SID, and API Key Secret in a new file called `.env` in the root level of the application (example below).
+- Create a new Conversations service in the [Services section](https://www.twilio.com/console/conversations/services) under the Conversations tab in the Twilio Console. Take note of the SID generated.
+- Store your Account SID, API Key SID, API Key Secret, and Conversations Service SID in a new file called `.env` in the root level of the application (example below).
 
 ```
 TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 TWILIO_API_KEY_SID=SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 TWILIO_API_KEY_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_CONVERSATIONS_SERVICE_SID=ISxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-Now the local token server (see [server.js](server.js)) can dispense Access Tokens to connect to a Room.
+Now the local token server (see [server/index.ts](server/index.ts)) can dispense Access Tokens to connect to a Room and a Conversation. See [.env.example](.env.example) for information on additional environment variables that can be used.
+
+**Note:** the use of Twilio Conversations is optional. If you wish to opt out, simply run or build this app with the `REACT_APP_DISABLE_TWILIO_CONVERSATIONS` environment variable set to `true`.
 
 ### Running the App locally
 
 Run the app locally with
 
-    $ npm start
+    npm start
 
 This will start the local token server and run the app in the development mode. Open [http://localhost:3000](http://localhost:3000) to see the application in the browser.
 
 The page will reload if you make changes to the source code in `src/`.
 You will also see any linting errors in the console. Start the token server locally with
 
-    $ npm run server
+    npm run server
 
-The token server runs on port 8081 and expects a `GET` request at the `/token` route with the following query parameters:
+The token server runs on port 8081 and expects a `POST` request at the `/token` route with the following JSON parameters:
 
 ```
-identity: string,  // the user's identity
-roomName: string   // the room name
+{
+  "user_identity": string, // the user's identity
+  "room_name": string, // the room name
+}
 ```
 
-The response will be a token that can be used to connect to a room.
-
-Try it out with this sample `curl` command:
-
-`curl 'localhost:8081/token?identity=TestName&roomName=TestRoom'`
+The response will be a token that can be used to connect to a room. The server provided with this application uses the same endpoints as the [plugin-rtc](https://github.com/twilio-labs/plugin-rtc) Twilio CLI plugin that is used to deploy the app. For more detailed information on the server endpoints, please see the [plugin-rtc README](https://github.com/twilio-labs/plugin-rtc#twilio-labsplugin-rtc).
 
 ### Multiple Participants in a Room
 
@@ -184,19 +210,19 @@ Additionally, if you would like to invite other participants to a room, each par
 
 Build the React app with
 
-    $ npm run build
+    npm run build
 
 This script will build the static assets for the application in the `build/` directory.
 
 ### Tests
 
-This application has unit tests (using [Jest](https://jestjs.io/)) and E2E tests (using [Cypress](https://www.cypress.io/)). You can run the tests with the following scripts.
+This application has unit tests (using [Jest](https://jestjs.io/)) and end-to-end tests (using [Cypress](https://www.cypress.io/)). You can run the tests with the following scripts.
 
 #### Unit Tests
 
 Run unit tests with
 
-    $ npm test
+    npm test
 
 This will run all unit tests with Jest and output the results to the console.
 
@@ -204,15 +230,15 @@ This will run all unit tests with Jest and output the results to the console.
 
 Run end to end tests with
 
-    $ npm run cypress:open
+    npm run cypress:open
 
 This will open the Cypress test runner. When it's open, select a test file to run.
 
-Note: Be sure to complete the 'Getting Started' section before running these tests. These Cypress tests will connect to real Twilio rooms, so you may be billed for any time that is used.
+**Note:** Be sure to complete the 'Getting Started' section before running these tests. These Cypress tests will connect to real Twilio rooms and real Twilio conversations, so you may be billed for any time that is used.
 
 ### Application Architecture
 
-The state of this application (with a few exceptions) is managed by the [room object](https://media.twiliocdn.com/sdk/js/video/releases/2.0.0/docs/Room.html) that is supplied by the SDK. The `room` object contains all information about the room that the user is connected to. The class hierarchy of the `room` object can be viewed [here](https://www.twilio.com/docs/video/migrating-1x-2x#object-model).
+The state of this application (with a few exceptions) is managed by the [room object](https://sdk.twilio.com/js/video/releases/2.13.0/docs/Room.html) that is supplied by the SDK. The `room` object contains all information about the room that the user is connected to. The class hierarchy of the `room` object can be viewed [here](https://www.twilio.com/docs/video/migrating-1x-2x#object-model).
 
 One great way to learn about the room object is to explore it in the browser console. When you are connected to a room, the application will expose the room object as a window variable: `window.twilioRoom`.
 
@@ -220,7 +246,7 @@ Since the Twilio Video SDK manages the `room` object state, it can be used as th
 
 [React hooks](https://reactjs.org/docs/hooks-intro.html) can be used to subscribe to events and trigger component re-renders. This application frequently uses the `useState` and `useEffect` hooks to subscribe to changes in room state. Here is a simple example:
 
-```
+```javascript
 import { useEffect, useState } from 'react';
 
 export default function useDominantSpeaker(room) {
@@ -241,13 +267,15 @@ In this hook, the `useEffect` hook is used to subscribe to the `dominantSpeakerC
 
 For more information on how React hooks can be used with the Twilio Video SDK, see this tutorial: https://www.twilio.com/blog/video-chat-react-hooks. To see all of the hooks used by this application, look in the `src/hooks` directory.
 
+The [VideoProvider](src/components/VideoProvider/index.tsx) component contains much of the logic that relates to connecting to video rooms and acquiring local input devices. The VideoProvider component exposes many properties and methods to the rest of the application through the [useVideoContext](src/hooks/useVideoContext/useVideoContext.ts) hook. Similarly, the [ChatProvider](src/components/ChatProvider/index.tsx) contains logic that relates to connecting to a Twilio Conversation, and it exposes properties and methods through the [useChatContext](src/hooks/useChatContext/useChatContext.ts) hook.
+
 ### Configuration
 
-The `connect` function from the SDK accepts a [configuration object](https://media.twiliocdn.com/sdk/js/video/releases/2.0.0/docs/global.html#ConnectOptions). The configuration object for this application can be found in [src/index.ts](https://github.com/twilio/twilio-video-app-react/blob/master/src/index.tsx#L20). In this object, we 1) enable dominant speaker detection, 2) enable the network quality API, and 3) supply various options to configure the [bandwidth profile](https://www.twilio.com/docs/video/tutorials/using-bandwidth-profile-api).
+The `connect` function from the SDK accepts a [configuration object](https://sdk.twilio.com/js/video/releases/2.13.0/docs/global.html#ConnectOptions). The configuration object for this application can be found in [src/utils/useConnectionOptions/useConnectionOptions.ts](src/utils/useConnectionOptions/useConnectionOptions.ts). In this object, we 1) enable dominant speaker detection, 2) enable the network quality API, and 3) supply various options to configure the [bandwidth profile](https://www.twilio.com/docs/video/tutorials/using-bandwidth-profile-api).
 
 #### Track Priority Settings
 
-This application dynamically changes the priority of remote video tracks to provide an optimal collaboration experience. Any video track that will be displayed in the main video area will have `track.setPriority('high')` called on it (see the [VideoTrack](https://github.com/twilio/twilio-video-app-react/blob/master/src/components/VideoTrack/VideoTrack.tsx#L25) component) when the component is mounted. This higher priority enables the track to be rendered at a high resolution. `track.setPriority(null)` is called when the component is unmounted so that the track's priority is set to its publish priority (low).
+This application dynamically changes the priority of remote video tracks to provide an optimal collaboration experience. Any video track that will be displayed in the main video area will have `track.setPriority('high')` called on it (see the [VideoTrack](https://github.com/twilio/twilio-video-app-react/blob/master/src/components/VideoTrack/VideoTrack.tsx#L29) component) when the component is mounted. This higher priority enables the track to be rendered at a high resolution. `track.setPriority(null)` is called when the component is unmounted so that the track's priority is set to its publish priority (low).
 
 ### Google Authentication using Firebase (optional)
 

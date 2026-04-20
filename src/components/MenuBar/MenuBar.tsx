@@ -5,17 +5,19 @@ import watchRTC from '@testrtc/watchrtc-sdk';
 
 import Button from '@material-ui/core/Button';
 import EndCallButton from '../Buttons/EndCallButton/EndCallButton';
+import { isMobile } from '../../utils';
 import NailUpEndCallButton from '../Buttons/NailUpEndCallButton/NailUpEndCallButton';
 import NailUpJoinCallButton from '../Buttons/NailUpJoinCallButton/NailUpJoinCallButton';
-import FlipCameraButton from './FlipCameraButton/FlipCameraButton';
 import Menu from './Menu/Menu';
-
+import useParticipants from '../../hooks/useParticipants/useParticipants';
 import useRoomState from '../../hooks/useRoomState/useRoomState';
 import useVideoContext from '../../hooks/useVideoContext/useVideoContext';
 import { Typography, Grid, Hidden } from '@material-ui/core';
 import ToggleAudioButton from '../Buttons/ToggleAudioButton/ToggleAudioButton';
+import ToggleChatButton from '../Buttons/ToggleChatButton/ToggleChatButton';
 import ToggleVideoButton from '../Buttons/ToggleVideoButton/ToggleVideoButton';
 import ToggleScreenShareButton from '../Buttons/ToogleScreenShareButton/ToggleScreenShareButton';
+import ToggleCaptionsButton from '../Buttons/ToggleCaptionsButton/ToggleCaptionsButton';
 import ToggleStatsButton from '../Buttons/ToggleStatsButton/ToggleStatsButton';
 import ConnectWSButton from '../Buttons/ConnectWSButton/ConnectWSButton';
 import DisconnectWSButton from '../Buttons/DisconnectWSButton/DisconnectWSButton';
@@ -39,7 +41,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     screenShareBanner: {
       position: 'fixed',
-      zIndex: 10,
+      zIndex: 8,
       bottom: `${theme.footerHeight}px`,
       left: 0,
       right: 0,
@@ -75,6 +77,7 @@ export default function MenuBar() {
   const roomState = useRoomState();
   const isReconnecting = roomState === 'reconnecting';
   const { room } = useVideoContext();
+  const participants = useParticipants();
 
   const handleStopSharing = () => {
     toggleScreenShare();
@@ -93,15 +96,21 @@ export default function MenuBar() {
         <Grid container justifyContent="space-around" alignItems="center">
           <Hidden smDown>
             <Grid style={{ flex: 1 }}>
-              <Typography variant="body1">{room.name}</Typography>
+              <Typography variant="body1">
+                {room!.name} | {participants.length + 1} participant{participants.length ? 's' : ''}
+              </Typography>
             </Grid>
           </Hidden>
           <Grid item>
             <Grid container justifyContent="center">
               <ToggleAudioButton disabled={isReconnecting} />
               <ToggleVideoButton disabled={isReconnecting} />
-              <Hidden smDown>{!isSharingScreen && <ToggleScreenShareButton disabled={isReconnecting} />}</Hidden>
-              <FlipCameraButton />
+              <ToggleCaptionsButton disabled={isReconnecting} />
+              {!isSharingScreen && !isMobile && <ToggleScreenShareButton disabled={isReconnecting} />}
+              {process.env.REACT_APP_DISABLE_TWILIO_CONVERSATIONS !== 'true' && <ToggleChatButton />}
+              <Hidden smDown>
+                <Menu />
+              </Hidden>
             </Grid>
           </Grid>
           <Hidden smDown>

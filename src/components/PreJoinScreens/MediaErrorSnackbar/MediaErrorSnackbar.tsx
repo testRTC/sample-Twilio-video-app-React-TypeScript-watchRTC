@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Snackbar from '../../Snackbar/Snackbar';
-import { useHasAudioInputDevices, useHasVideoInputDevices } from '../../../hooks/deviceHooks/deviceHooks';
+import useDevices from '../../../hooks/useDevices/useDevices';
 import useVideoContext from '../../../hooks/useVideoContext/useVideoContext';
 
 export function getSnackbarContent(hasAudio: boolean, hasVideo: boolean, error?: Error) {
@@ -8,6 +8,19 @@ export function getSnackbarContent(hasAudio: boolean, hasVideo: boolean, error?:
   let message = '';
 
   switch (true) {
+    // These custom errors are thrown by the useLocalTracks hook. They are thrown when the user explicitly denies
+    // permission to only their camera, or only their microphone.
+    case error?.message === 'CameraPermissionsDenied':
+      headline = 'Unable to Access Media:';
+      message =
+        'The user has denied permission to use video. Please grant permission to the browser to access the camera.';
+      break;
+    case error?.message === 'MicrophonePermissionsDenied':
+      headline = 'Unable to Access Media:';
+      message =
+        'The user has denied permission to use audio. Please grant permission to the browser to access the microphone.';
+      break;
+
     // This error is emitted when the user or the user's system has denied permission to use the media devices
     case error?.name === 'NotAllowedError':
       headline = 'Unable to Access Media:';
@@ -59,16 +72,18 @@ export function getSnackbarContent(hasAudio: boolean, hasVideo: boolean, error?:
 }
 
 export default function MediaErrorSnackbar({ error }: { error?: Error }) {
-  const hasAudio = useHasAudioInputDevices();
-  const hasVideo = useHasVideoInputDevices();
+  const { hasAudioInputDevices, hasVideoInputDevices } = useDevices();
 
   const { isAcquiringLocalTracks } = useVideoContext();
 
   const [isSnackbarDismissed, setIsSnackbarDismissed] = useState(false);
 
-  const isSnackbarOpen = !isSnackbarDismissed && !isAcquiringLocalTracks && (Boolean(error) || !hasAudio || !hasVideo);
+  const isSnackbarOpen =
+    !isSnackbarDismissed &&
+    !isAcquiringLocalTracks &&
+    (Boolean(error) || !hasAudioInputDevices || !hasVideoInputDevices);
 
-  const { headline, message } = getSnackbarContent(hasAudio, hasVideo, error);
+  const { headline, message } = getSnackbarContent(hasAudioInputDevices, hasVideoInputDevices, error);
 
   return (
     <Snackbar

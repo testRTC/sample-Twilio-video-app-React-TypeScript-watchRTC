@@ -1,12 +1,15 @@
-version: 2
+version: '2.1'
+orbs:
+  browser-tools: circleci/browser-tools@2.3.2
 jobs:
   build:
     docker:
-      - image: circleci/node:12-browsers
+      - image: cimg/node:22.12-browsers
     working_directory: ~/twilio-video-react-app
 
     steps:
       - checkout
+      - browser-tools/install_browser_tools
 
       - restore_cache:
           keys:
@@ -14,7 +17,11 @@ jobs:
             - v1-deps-{{ .Branch }}
             - v1-deps
 
-      - run: npm ci
+      - run:
+          name: 'Install Dependencies'
+          command: |
+            npm ci
+            npm run noisecancellation:krisp
 
       - save_cache:
           key: v1-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
@@ -24,41 +31,50 @@ jobs:
             - ~/.cache
 
       - run:
-          name: "Jest Unit Tests"
+          name: 'Jest Unit Tests'
           command: npm run test:ci
           environment:
-            JEST_JUNIT_OUTPUT_DIR: "test-reports/jest"
-            JEST_JUNIT_OUTPUT_NAME: "results.xml"
-            JEST_JUNIT_CLASSNAME: "{classname}"
-            JEST_JUNIT_TITLE: "{title}"
+            JEST_JUNIT_OUTPUT_DIR: 'test-reports/jest'
+            JEST_JUNIT_OUTPUT_NAME: 'results.xml'
+            JEST_JUNIT_CLASSNAME: '{classname}'
+            JEST_JUNIT_TITLE: '{title}'
 
       - store_artifacts:
           path: coverage
 
       - run:
-          name: "Build app with Firebase auth disabled"
-          command: npm run build
-          environment:
-            REACT_APP_TOKEN_ENDPOINT: "http://localhost:8081/token"
+          name: 'Eslint'
+          command: npm run lint -- --max-warnings 0
 
       - run:
-          name: "Set environment variables for local token server (used by Cypress tests)"
+          name: 'Check server types'
+          command: npm run typescript:server
+
+      - run:
+          name: 'Build app with Firebase auth disabled'
+          command: npm run build
+
+      - run:
+          name: 'Set environment variables for local token server (used by Cypress tests)'
           command: |
             echo TWILIO_ACCOUNT_SID=$TWILIO_ACCOUNT_SID >> .env
             echo TWILIO_API_KEY_SID=$TWILIO_API_KEY >> .env
             echo TWILIO_API_KEY_SECRET=$TWILIO_API_SECRET >> .env
+            echo TWILIO_CONVERSATIONS_SERVICE_SID=$TWILIO_CONVERSATIONS_SERVICE_SID >> .env
 
       - run: npm run cypress:ci
+
+      - store_artifacts:
+          path: cypress/screenshots
 
       - store_test_results:
           path: test-reports
 
       # Rebuild app with firebase auth enabled
       - run:
-          name: "Build app with Firebase auth enabled"
+          name: 'Build app with Firebase auth enabled'
           command: |
             echo REACT_APP_SET_AUTH=firebase >> .env
-            echo REACT_APP_TOKEN_ENDPOINT=$REACT_APP_TOKEN_ENDPOINT >> .env
             echo REACT_APP_FIREBASE_API_KEY=$REACT_APP_FIREBASE_API_KEY >> .env
             echo REACT_APP_FIREBASE_AUTH_DOMAIN=$REACT_APP_FIREBASE_AUTH_DOMAIN >> .env
             echo REACT_APP_FIREBASE_DATABASE_URL=$REACT_APP_FIREBASE_DATABASE_URL >> .env
@@ -87,6 +103,8 @@ jobs:
           gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
 
       - run: echo $CIRCLE_TAG > build/version.txt
+
+      - run: gcloud secrets versions access latest --secret=firebase-admin-credentials | sed 's/^[0-9a-f]*$//' > server/serviceAccountKey.json
 
       - run: gcloud app deploy -q
 

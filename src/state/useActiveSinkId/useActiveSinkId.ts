@@ -1,18 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import { SELECTED_AUDIO_OUTPUT_KEY } from '../../constants';
-import { useAudioOutputDevices } from '../../hooks/deviceHooks/deviceHooks';
+import useDevices from '../../hooks/useDevices/useDevices';
 
 export default function useActiveSinkId() {
-  const audioOutputDevices = useAudioOutputDevices();
+  const { audioOutputDevices } = useDevices();
   const [activeSinkId, _setActiveSinkId] = useState('default');
 
-  const setActiveSinkId = useCallback(
-    (sinkId: string) => {
-      window.localStorage.setItem(SELECTED_AUDIO_OUTPUT_KEY, sinkId);
-      _setActiveSinkId(sinkId);
-    },
-    [_setActiveSinkId]
-  );
+  const setActiveSinkId = useCallback((sinkId: string) => {
+    window.localStorage.setItem(SELECTED_AUDIO_OUTPUT_KEY, sinkId);
+    _setActiveSinkId(sinkId);
+  }, []);
 
   useEffect(() => {
     const selectedSinkId = window.localStorage.getItem(SELECTED_AUDIO_OUTPUT_KEY);

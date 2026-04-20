@@ -17,6 +17,7 @@ describe('the RoomNameScreen component', () => {
         setName={() => {}}
         setRoomName={() => {}}
         handleSubmit={() => {}}
+        setCaptureFeedback={() => {}}
       />
     );
 
@@ -33,6 +34,7 @@ describe('the RoomNameScreen component', () => {
         setName={() => {}}
         setRoomName={() => {}}
         handleSubmit={() => {}}
+        setCaptureFeedback={() => {}}
       />
     );
 
@@ -43,7 +45,9 @@ describe('the RoomNameScreen component', () => {
   it('should render correctly when there is a logged in user and "customIdentity=true" query parameter"', () => {
     mockUseAppState.mockImplementationOnce(() => ({ user: { displayName: 'Test Name' } }));
 
+    // @ts-ignore
     delete window.location;
+
     // @ts-ignore
     window.location = {
       search: 'customIdentity=true',
@@ -56,6 +60,7 @@ describe('the RoomNameScreen component', () => {
         setName={() => {}}
         setRoomName={() => {}}
         handleSubmit={() => {}}
+        setCaptureFeedback={() => {}}
       />
     );
 
