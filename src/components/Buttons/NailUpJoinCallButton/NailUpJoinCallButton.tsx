@@ -35,6 +35,9 @@ export default function NailUpJoinCallButton(props: { className?: string }) {
   const { room } = useVideoContext();
 
   const onJoinClick = () => {
+    if (!room) {
+      return;
+    }
     const url = new URL((window as any).location);
 
     const newRoomId = `${room.name.split(',')[0]}-${getIterator()}`;

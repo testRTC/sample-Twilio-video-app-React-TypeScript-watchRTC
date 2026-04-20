@@ -12,8 +12,6 @@ import {
 } from '@material-ui/core';
 import { useAppState } from '../../../state';
 
-import watchRTC from '@testrtc/watchrtc-sdk';
-
 const useStyles = makeStyles((theme: Theme) => ({
   gutterBottom: {
     marginBottom: '1em',

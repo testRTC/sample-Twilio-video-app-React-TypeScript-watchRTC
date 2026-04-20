@@ -22,7 +22,8 @@ const useStyles = makeStyles((theme: Theme) => ({
   innerContainer: {
     display: 'flex',
     width: '888px',
-    height: '379px',
+    minHeight: '379px',
+    height: 'auto',
     borderRadius: '8px',
     boxShadow: '0px 2px 4px 0px rgba(40, 42, 43, 0.3)',
     overflow: 'hidden',
@@ -30,6 +31,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     margin: 'auto',
     [theme.breakpoints.down('sm')]: {
       display: 'block',
+      minHeight: 'unset',
       height: 'auto',
       width: 'calc(100% - 40px)',
       margin: 'auto',

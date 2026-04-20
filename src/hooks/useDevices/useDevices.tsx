@@ -14,11 +14,21 @@ export default function useDevices() {
   });
 
   useEffect(() => {
-    const getDevices = () => getDeviceInfo().then(devices => setDeviceInfo(devices));
+    let cancelled = false;
+
+    const getDevices = () => {
+      getDeviceInfo().then(devices => {
+        if (!cancelled) {
+          setDeviceInfo(devices);
+        }
+      });
+    };
+
     navigator.mediaDevices.addEventListener('devicechange', getDevices);
     getDevices();
 
     return () => {
+      cancelled = true;
       navigator.mediaDevices.removeEventListener('devicechange', getDevices);
     };
   }, []);

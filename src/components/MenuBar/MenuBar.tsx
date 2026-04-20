@@ -8,7 +8,6 @@ import EndCallButton from '../Buttons/EndCallButton/EndCallButton';
 import { isMobile } from '../../utils';
 import NailUpEndCallButton from '../Buttons/NailUpEndCallButton/NailUpEndCallButton';
 import NailUpJoinCallButton from '../Buttons/NailUpJoinCallButton/NailUpJoinCallButton';
-import FlipCameraButton from './FlipCameraButton/FlipCameraButton';
 import Menu from './Menu/Menu';
 import useParticipants from '../../hooks/useParticipants/useParticipants';
 import useRoomState from '../../hooks/useRoomState/useRoomState';

@@ -61,6 +61,10 @@ const useStyles = makeStyles((theme: Theme) => ({
     padding: '0.8em 0',
     margin: 0,
   },
+  deviceControlsColumn: {
+    alignSelf: 'flex-start',
+    width: '100%',
+  },
   toolTipContainer: {
     display: 'flex',
     alignItems: 'center',
@@ -297,15 +301,14 @@ export default function DeviceSelectionScreen({
             </Hidden>
           </div>
         </Grid>
-        <Grid item md={5} sm={12} xs={12}>
-          <Grid container direction="column" justifyContent="space-between" style={{ alignItems: 'normal' }}>
+        <Grid item md={5} sm={12} xs={12} className={classes.deviceControlsColumn}>
+          <Grid container direction="column" justifyContent="flex-start" style={{ alignItems: 'stretch' }}>
             <div>
               <Hidden smDown>
                 <ToggleAudioButton className={classes.deviceButton} disabled={disableButtons} />
                 <ToggleVideoButton className={classes.deviceButton} disabled={disableButtons} />
               </Hidden>
             </div>
-            <SettingsMenu mobileButtonClass={classes.mobileButton} />
             <Button
               onClick={() => runNetworkTest()}
               style={{ marginTop: '2em' }}

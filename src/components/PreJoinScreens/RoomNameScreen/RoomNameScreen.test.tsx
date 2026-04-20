@@ -17,6 +17,7 @@ describe('the RoomNameScreen component', () => {
         setName={() => {}}
         setRoomName={() => {}}
         handleSubmit={() => {}}
+        setCaptureFeedback={() => {}}
       />
     );
 
@@ -33,6 +34,7 @@ describe('the RoomNameScreen component', () => {
         setName={() => {}}
         setRoomName={() => {}}
         handleSubmit={() => {}}
+        setCaptureFeedback={() => {}}
       />
     );
 
@@ -58,6 +60,7 @@ describe('the RoomNameScreen component', () => {
         setName={() => {}}
         setRoomName={() => {}}
         handleSubmit={() => {}}
+        setCaptureFeedback={() => {}}
       />
     );
 
