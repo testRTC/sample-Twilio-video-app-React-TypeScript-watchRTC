@@ -11,6 +11,7 @@ import Room from './components/Room/Room';
 
 import useHeight from './hooks/useHeight/useHeight';
 import useRoomState from './hooks/useRoomState/useRoomState';
+import { getInCallWindowing } from './utils/inCallWindowing/inCallWindowing';
 
 import watchRTC from '@testrtc/watchrtc-sdk';
 
@@ -58,7 +59,11 @@ export default function App() {
   const height = useHeight();
 
   React.useEffect(() => {
-    watchRTC.init({ collectionInterval: getCollectionInterval(), splitChannels: getSplitChannels() } as any);
+    watchRTC.init({
+      collectionInterval: getCollectionInterval(),
+      splitChannels: getSplitChannels(),
+      inCallWindowing: getInCallWindowing(window.location.search),
+    } as any);
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('metric') && Boolean(urlParams.get('metric'))) {
