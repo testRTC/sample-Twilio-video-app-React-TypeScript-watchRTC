@@ -60,6 +60,16 @@ describe('the useVideoInputDevices hook', () => {
     await waitForNextUpdate();
     expect(result.current).toEqual([mockDevices[1]]);
   });
+
+  it('should return no video input devices in ?audioOnly=1 mode', async () => {
+    window.history.pushState({}, '', '/?audioOnly=1');
+    // @ts-ignore
+    navigator.mediaDevices.enumerateDevices = () => Promise.resolve(mockDevices);
+    const { result, waitForNextUpdate } = renderHook(deviceHooks.useVideoInputDevices);
+    await waitForNextUpdate();
+    expect(result.current).toEqual([]);
+    window.history.pushState({}, '', '/');
+  });
 });
 
 describe('the useAudioOutputDevices hook', () => {

@@ -8,6 +8,7 @@ import ToggleAudioButton from '../../Buttons/ToggleAudioButton/ToggleAudioButton
 import ToggleVideoButton from '../../Buttons/ToggleVideoButton/ToggleVideoButton';
 import { useAppState } from '../../../state';
 import useVideoContext from '../../../hooks/useVideoContext/useVideoContext';
+import { getRtcApiKey, withoutKeyParams } from '../../../utils/demoConfig';
 
 // import { wrapPeerConnectionEvent } from '../../../utils';
 
@@ -96,8 +97,8 @@ export default function DeviceSelectionScreen({
 
   const wrtcConfig = React.useMemo(
     () => ({
-      rtcApiKey:
-        (queryString.parse(window.location.search)?.apiKey as string) || (process.env.REACT_APP_RTC_API_KEY as string),
+      // From the environment only; never from a URL parameter (FR8.3; R-79).
+      rtcApiKey: getRtcApiKey() as string,
       rtcRoomId: decodeIfEncoded(roomName),
       rtcPeerId: decodeIfEncoded(name),
       keys: {
@@ -216,8 +217,8 @@ export default function DeviceSelectionScreen({
   const runNetworkTest = async () => {
     try {
       console.log(`SAMPLE:runNetworkTest Starting`, { watchRTC });
-      const params = getJsonFromUrl(window.location.search);
-      console.log(`muly:DeviceSelectionScreen:runNetworkTest`, { params });
+      // Every URL parameter whose name contains "key" is dropped, so none can override or reveal a key (FR8.3).
+      const params = withoutKeyParams(getJsonFromUrl(window.location.search));
       const answer = await watchRTC.qualityrtc.run({
         options: {
           ...params,

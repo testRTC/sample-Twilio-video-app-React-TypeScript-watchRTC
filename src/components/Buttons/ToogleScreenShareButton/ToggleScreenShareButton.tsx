@@ -9,11 +9,13 @@ import Tooltip from '@material-ui/core/Tooltip';
 
 import useScreenShareParticipant from '../../../hooks/useScreenShareParticipant/useScreenShareParticipant';
 import useVideoContext from '../../../hooks/useVideoContext/useVideoContext';
+import { isAudioOnly } from '../../../utils/demoConfig';
 
 export const SCREEN_SHARE_TEXT = 'Share Screen';
 export const STOP_SCREEN_SHARE_TEXT = 'Stop Sharing Screen';
 export const SHARE_IN_PROGRESS_TEXT = 'Cannot share screen when another user is sharing';
 export const SHARE_NOT_SUPPORTED_TEXT = 'Screen sharing is not supported with this browser';
+export const SHARE_AUDIO_ONLY_TEXT = 'Screen sharing is off in audio-only mode';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -35,7 +37,9 @@ export default function ToggleScreenShareButton(props: { disabled?: boolean }) {
   const { toggleScreenShare } = useVideoContext();
   const disableScreenShareButton = Boolean(screenShareParticipant);
   const isScreenShareSupported = navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia;
-  const isDisabled = props.disabled || disableScreenShareButton || !isScreenShareSupported;
+  // `?audioOnly=1` (FR8.4): a screen share would publish a video track, so it is not offered.
+  const audioOnly = isAudioOnly();
+  const isDisabled = props.disabled || disableScreenShareButton || !isScreenShareSupported || audioOnly;
 
   let tooltipMessage = '';
 
@@ -47,7 +51,12 @@ export default function ToggleScreenShareButton(props: { disabled?: boolean }) {
     tooltipMessage = SHARE_NOT_SUPPORTED_TEXT;
   }
 
+  if (audioOnly) {
+    tooltipMessage = SHARE_AUDIO_ONLY_TEXT;
+  }
+
   const handleOnClick = () => {
+    if (audioOnly) return;
     toggleScreenShare();
     watchRTC.addEvent({ type: 'local', name: 'Share Screen' });
   };

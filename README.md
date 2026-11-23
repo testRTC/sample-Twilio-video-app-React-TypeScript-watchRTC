@@ -20,6 +20,69 @@
 
 Results will appear in watchRTC section in main app
 
+## watchRTC Detect demo (branch `feature/RTC-detect-voice-signal-suite` only)
+
+This branch is the demo host for the watchRTC Detect pilot (RTC-5586, signal #1 `voice.loss.inbound`). Target
+desktop Chrome. Nothing on this branch is merged to `master`.
+
+### Local SDK build
+
+`package.json` depends on the local SDK working tree, not on the published package:
+
+```
+"@testrtc/watchrtc-sdk": "file:../watchrtc-sdk"
+```
+
+`file:../watchrtc-sdk` resolves to the folder named `watchrtc-sdk` beside this app's folder. Before running
+`yarn install --force` here, that folder must have the Detect suite branch, `feature/RTC-detect-voice-signal-suite`,
+checked out and its `lib/` built (`yarn build` in `watchrtc-sdk`); otherwise the app is built against whatever SDK
+branch that folder happens to be on. Run `yarn install --force` here again after every SDK build so the copied package
+is refreshed.
+
+To undo it, restore the published version and reinstall:
+
+```
+"@testrtc/watchrtc-sdk": "1.43.2-beta.3"
+```
+
+then run `yarn install`. This swap must never reach `master`: the published dependency is what every other user of
+this app needs.
+
+### Settings
+
+- `rtcApiKey` comes only from the environment (`REACT_APP_RTC_API_KEY` in your local `.env`). The `?apiKey=` URL
+  parameter is no longer read or printed.
+- `?audioOnly=1` joins with no camera and disables screen sharing, so the call carries audio only. Open every tab with
+  it for an audio-only call.
+- `?detect=1` is the one demo Detect switch, off by default (R-405). Today it only shows the Detect panel, fed with
+  simulated events; it does not yet switch Detect on in the SDK. Passing Detect on to the SDK is added at pilot plan
+  Step 15. There is no threshold setting, and the panel shows no threshold value.
+
+The Detect panel groups events by peer connection, then stream, and lists each condition's events from raise to
+clear with the raise-to-clear time.
+
+**Until the SDK delivers `onDetect` events, the panel is fed by a demo-only simulated source** and is labelled
+"simulated events"; its identifiers start with `sim-`. The switch to the real SDK is made in one file,
+`src/detect/detectIntegration.ts`.
+
+### Making signal #1 raise on demand (Windows, clumsy)
+
+The on-demand method is Windows `clumsy`, the tool the pilot's 13 reference logs were captured with. Chrome's
+fake-network field trial was tried and produced no packet loss (pilot record, `construction/code-generation/evidence/d5/results.md`).
+
+1. Build the SDK on its Detect branch, then run `yarn install --force` and `yarn start` here.
+2. In desktop Chrome, open two tabs on `http://localhost:3000/?audioOnly=1&detect=1` and join both to the same room
+   with different names. Wait until both hear each other.
+3. Watch the Detect panel in one tab for a while with no impairment: no condition should be raised.
+4. Start clumsy (run as administrator) with filter `outbound and udp`, tick **Drop**, set it to `5` %, and press
+   **Start**.
+5. Expect the panel to show a raised `voice.loss.inbound` condition on an inbound audio stream, then refreshes while
+   the loss continues.
+6. Press **Stop** in clumsy. Expect the condition to be cleared, and its line to show the raise-to-clear time.
+
+This live check needs the SDK's Detect delivery (pilot plan Steps 13 and 14). Before that, the panel shows only
+simulated events and the check cannot be made.
+
 ## What is it
 
 This application demonstrates a multi-party video application built with [twilio-video.js](https://github.com/twilio/twilio-video.js) and [Create React App](https://github.com/facebook/create-react-app).

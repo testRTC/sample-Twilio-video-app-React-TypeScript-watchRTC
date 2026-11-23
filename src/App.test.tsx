@@ -3,6 +3,7 @@ import App from './App';
 import MenuBar from './components/MenuBar/MenuBar';
 import PreJoinScreens from './components/PreJoinScreens/PreJoinScreens';
 import Room from './components/Room/Room';
+import DetectPanel from './components/DetectPanel/DetectPanel';
 import { shallow } from 'enzyme';
 import useHeight from './hooks/useHeight/useHeight';
 import useRoomState from './hooks/useRoomState/useRoomState';
@@ -32,6 +33,23 @@ describe('the App component', () => {
     expect(wrapper.find(PreJoinScreens).exists()).toBe(false);
     expect(wrapper.find(Room).exists()).toBe(true);
     expect(wrapper.find(MenuBar).exists()).toBe(true);
+  });
+
+  it('should show the Detect panel only when the ?detect=1 switch is on (FR8.4)', () => {
+    mockUseRoomState.mockImplementation(() => 'connected');
+    expect(
+      shallow(<App />)
+        .find(DetectPanel)
+        .exists()
+    ).toBe(false);
+
+    window.history.pushState({}, '', '/?detect=1');
+    expect(
+      shallow(<App />)
+        .find(DetectPanel)
+        .exists()
+    ).toBe(true);
+    window.history.pushState({}, '', '/');
   });
 
   it('should set the height of the main container using the useHeight hook', () => {

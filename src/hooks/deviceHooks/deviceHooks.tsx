@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { isAudioOnly } from '../../utils/demoConfig';
 
 export function useDevices() {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
@@ -23,6 +24,8 @@ export function useAudioInputDevices() {
 
 export function useVideoInputDevices() {
   const devices = useDevices();
+  // `?audioOnly=1` (FR8.4): no camera is offered, so no video track is acquired or published.
+  if (isAudioOnly()) return [];
   return devices.filter(device => device.kind === 'videoinput');
 }
 

@@ -5,6 +5,7 @@ import useVideoContext from '../../../hooks/useVideoContext/useVideoContext';
 
 import ToggleScreenShareButton, {
   SCREEN_SHARE_TEXT,
+  SHARE_AUDIO_ONLY_TEXT,
   SHARE_IN_PROGRESS_TEXT,
   SHARE_NOT_SUPPORTED_TEXT,
 } from './ToggleScreenShareButton';
@@ -45,6 +46,19 @@ describe('the ToggleScreenShareButton component', () => {
     const wrapper = shallow(<ToggleScreenShareButton />);
     wrapper.find(Button).simulate('click');
     expect(mockToggleScreenShare).toHaveBeenCalled();
+  });
+
+  it('should be disabled and not toggle screen share in ?audioOnly=1 mode', () => {
+    window.history.pushState({}, '', '/?audioOnly=1');
+    mockToggleScreenShare.mockClear();
+    const wrapper = mount(<ToggleScreenShareButton />);
+    expect(wrapper.find(Button).prop('disabled')).toBe(true);
+    expect(wrapper.find(Tooltip).prop('title')).toBe(SHARE_AUDIO_ONLY_TEXT);
+    shallow(<ToggleScreenShareButton />)
+      .find(Button)
+      .simulate('click');
+    expect(mockToggleScreenShare).not.toHaveBeenCalled();
+    window.history.pushState({}, '', '/');
   });
 
   it('should render the screenshare button with the correct messaging if screensharing is not supported', () => {

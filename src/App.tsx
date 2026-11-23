@@ -14,6 +14,10 @@ import useRoomState from './hooks/useRoomState/useRoomState';
 
 import watchRTC from '@testrtc/watchrtc-sdk';
 
+import DetectPanel from './components/DetectPanel/DetectPanel';
+import { detectInitOptions } from './detect/detectIntegration';
+import { getRtcApiKey, isDetectOn } from './utils/demoConfig';
+
 const Container = styled('div')({
   display: 'grid',
   gridTemplateRows: '1fr auto',
@@ -58,7 +62,12 @@ export default function App() {
   const height = useHeight();
 
   React.useEffect(() => {
-    watchRTC.init({ collectionInterval: getCollectionInterval(), splitChannels: getSplitChannels() } as any);
+    watchRTC.init({
+      rtcApiKey: getRtcApiKey(),
+      collectionInterval: getCollectionInterval(),
+      splitChannels: getSplitChannels(),
+      ...(isDetectOn() ? detectInitOptions() : {}),
+    } as any);
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('metric') && Boolean(urlParams.get('metric'))) {
@@ -86,6 +95,7 @@ export default function App() {
           <ReconnectingNotification />
           <MobileTopMenuBar />
           <Room />
+          {isDetectOn() && <DetectPanel />}
           <MenuBar />
         </Main>
       )}
