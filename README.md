@@ -70,7 +70,15 @@ clear with the raise-to-clear time.
 The on-demand method is Windows `clumsy`, the tool the pilot's 13 reference logs were captured with. Chrome's
 fake-network field trial was tried and produced no packet loss (pilot record, `construction/code-generation/evidence/d5/results.md`).
 
-1. Build the SDK on its Detect branch, then run `yarn install --force` and `yarn start` here.
+1. Build the SDK on its Detect branch, then run `yarn install --force` and `yarn start` here. On Node 17 or later,
+   `yarn start` stops with `ERR_OSSL_EVP_UNSUPPORTED` unless you first set `NODE_OPTIONS=--openssl-legacy-provider`
+   (the build script already sets it; `start` does not). In PowerShell: `$env:NODE_OPTIONS='--openssl-legacy-provider'; yarn start`.
+   The app refuses embedded or unsupported browsers ("Browser or context not supported"); use desktop Chrome.
+   To join a room you need the Twilio token function: run `yarn start-dev` (Netlify Dev, serves
+   `http://localhost:8080` and sets the OpenSSL option itself) rather than `yarn start`, with valid
+   `TWILIO_ACCOUNT_SID`, `TWILIO_API_KEY_SID`, `TWILIO_API_KEY_SECRET` and `REACT_APP_RTC_API_KEY` in your local `.env`
+   (Twilio error 20103 "Invalid Access Token issuer/subject" means the Twilio values are wrong). The first start can
+   time out while Netlify waits for the compile on port 3000; start it again. Allow the microphone in Chrome.
 2. In desktop Chrome, open two tabs on `http://localhost:3000/?audioOnly=1&detect=1` and join both to the same room
    with different names. Wait until both hear each other.
 3. Watch the Detect panel in one tab for a while with no impairment: no condition should be raised.
