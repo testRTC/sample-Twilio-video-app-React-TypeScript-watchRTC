@@ -47,13 +47,32 @@ describe('the Detect timeline (FR8.5)', () => {
     expect(raiseToClearMs(condition)).toBeUndefined();
   });
 
-  it('keeps a session-level config_error under the session group', () => {
-    const timeline = build([
-      payload({ state: 'config_error', peerConnectionId: null, streamId: null, conditionId: undefined }),
-    ]);
+  // Reworked 2026-11-25, S-119 (APPLIES R-233; FD 11.6.1): a config_error is never shown in the host UI, so
+  // addPayload returns the timeline it is given. Was: kept under the session group.
+  it('leaves the timeline unchanged (same reference) for a config_error', () => {
+    const empty: DetectTimeline = [];
+    const configError = payload({
+      state: 'config_error',
+      peerConnectionId: null,
+      streamId: null,
+      conditionId: undefined,
+    });
+    const result = addPayload(empty, configError);
+    expect(result).toBe(empty);
+    expect(result).toHaveLength(0);
+
+    const withCondition = build([payload({})]);
+    expect(addPayload(withCondition, configError)).toBe(withCondition);
+  });
+
+  // New 2026-11-25, S-119 point 3: SESSION_GROUP / PEER_CONNECTION_GROUP stay as guards for a signal payload with no
+  // peer connection or stream (the SDK at 7ee5b63 always sets peerConnectionId, so this is reached only in tests).
+  it('groups a signal payload with no peer connection or stream under the guard groups', () => {
+    const timeline = build([payload({ peerConnectionId: null, streamId: null })]);
     expect(timeline[0].peerConnectionId).toBe(SESSION_GROUP);
+    expect(timeline[0].peerConnectionId).toBe('(session)');
     expect(timeline[0].streams[0].streamId).toBe(PEER_CONNECTION_GROUP);
-    expect(timeline[0].streams[0].conditions[0].events[0].state).toBe('config_error');
+    expect(timeline[0].streams[0].conditions[0].events[0].state).toBe('raised');
   });
 
   it('does not change the timeline it is given', () => {

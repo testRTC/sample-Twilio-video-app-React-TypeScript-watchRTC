@@ -32,3 +32,6 @@ junit.xml
 
 # Local Netlify folder
 .netlify
+
+# watchRTC Detect demo profile, copied at install from ../watchrtc-sdk (public repository: never commit it)
+src/detect/cyara.demo@1.json

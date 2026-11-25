@@ -48,48 +48,57 @@ To undo it, restore the published version and reinstall:
 then run `yarn install`. This swap must never reach `master`: the published dependency is what every other user of
 this app needs.
 
+### Detect demo profile
+
+With `?detect=1` the app passes the pilot's demo profile to the SDK as `init({ detect })`. The profile is not part of
+this repository. `yarn install` (its `postinstall` step, `scripts/copy-demo-profile.js`) copies it byte for byte from
+the sibling SDK checkout, `../watchrtc-sdk/profiles/cyara.demo@1.json`, to `src/detect/cyara.demo@1.json`, and the
+install stops with a message if the SDK checkout or the profile is missing. The copy is gitignored and must never be
+committed: this repository is public and the profile's values are Cyara-internal. Run `yarn install --force` again
+after the profile changes in the SDK; a test checks the copy still equals the SDK's file.
+
 ### Settings
 
 - `rtcApiKey` comes only from the environment (`REACT_APP_RTC_API_KEY` in your local `.env`). The `?apiKey=` URL
   parameter is no longer read or printed.
 - `?audioOnly=1` joins with no camera and disables screen sharing, so the call carries audio only. Open every tab with
   it for an audio-only call.
-- `?detect=1` is the one demo Detect switch, off by default (R-405). Today it only shows the Detect panel, fed with
-  simulated events; it does not yet switch Detect on in the SDK. Passing Detect on to the SDK is added at pilot plan
-  Step 15. There is no threshold setting, and the panel shows no threshold value.
+- `?detect=1` is the one demo Detect switch, off by default (R-405). It switches Detect on in the SDK with the demo
+  profile (see "Detect demo profile") and shows the Detect panel, which listens to the SDK's `onDetect` events
+  (`watchRTC.subscribe('onDetect', …)`). Detect also needs `REACT_APP_RTC_API_KEY`. There is no threshold setting,
+  and the panel shows no threshold value.
 
 The Detect panel groups events by peer connection, then stream, and lists each condition's events from raise to
-clear with the raise-to-clear time.
+clear with the raise-to-clear time. A condition is titled with the SDK's own text for the signal
+(`watchRTC.detect.describe()`). Only events the SDK delivers appear: shadow-mode events are uploaded but never
+delivered (R-42). The connection to the SDK is made in one file, `src/detect/detectIntegration.ts`.
 
-**Until the SDK delivers `onDetect` events, the panel is fed by a demo-only simulated source** and is labelled
-"simulated events"; its identifiers start with `sim-`. The switch to the real SDK is made in one file,
-`src/detect/detectIntegration.ts`.
+The panel never shows a Detect configuration error (R-233): if `?detect=1` shows an empty panel, check the browser
+console for the `[watchRTC detect]` configuration line.
 
 ### Making signal #1 raise on demand (Windows, clumsy)
 
 The on-demand method is Windows `clumsy`, the tool the pilot's 13 reference logs were captured with. Chrome's
 fake-network field trial was tried and produced no packet loss (pilot record, `construction/code-generation/evidence/d5/results.md`).
 
-1. Build the SDK on its Detect branch, then run `yarn install --force` and `yarn start` here. On Node 17 or later,
-   `yarn start` stops with `ERR_OSSL_EVP_UNSUPPORTED` unless you first set `NODE_OPTIONS=--openssl-legacy-provider`
-   (the build script already sets it; `start` does not). In PowerShell: `$env:NODE_OPTIONS='--openssl-legacy-provider'; yarn start`.
-   The app refuses embedded or unsupported browsers ("Browser or context not supported"); use desktop Chrome.
-   To join a room you need the Twilio token function: run `yarn start-dev` (Netlify Dev, serves
-   `http://localhost:8080` and sets the OpenSSL option itself) rather than `yarn start`, with valid
-   `TWILIO_ACCOUNT_SID`, `TWILIO_API_KEY_SID`, `TWILIO_API_KEY_SECRET` and `REACT_APP_RTC_API_KEY` in your local `.env`
-   (Twilio error 20103 "Invalid Access Token issuer/subject" means the Twilio values are wrong). The first start can
-   time out while Netlify waits for the compile on port 3000; start it again. Allow the microphone in Chrome.
-2. In desktop Chrome, open two tabs on `http://localhost:3000/?audioOnly=1&detect=1` and join both to the same room
-   with different names. Wait until both hear each other.
-3. Watch the Detect panel in one tab for a while with no impairment: no condition should be raised.
-4. Start clumsy (run as administrator) with filter `outbound and udp`, tick **Drop**, set it to `5` %, and press
+1. Build the SDK on its Detect branch (`yarn build` in `watchrtc-sdk`), then run `yarn install --force` here.
+2. Start the app with `yarn start-dev` (Netlify Dev). It serves `http://localhost:8080`, runs the Twilio token
+   function and sets `NODE_OPTIONS=--openssl-legacy-provider` itself. It needs valid `TWILIO_ACCOUNT_SID`,
+   `TWILIO_API_KEY_SID`, `TWILIO_API_KEY_SECRET` and `REACT_APP_RTC_API_KEY` in your local `.env` (Twilio error 20103
+   "Invalid Access Token issuer/subject" means the Twilio values are wrong). The first start can time out while
+   Netlify waits for the compile on port 3000; start it again.
+   `yarn start` alone serves only the React app on port 3000, with no token function, so it cannot join a room. On
+   Node 17 or later it also stops with `ERR_OSSL_EVP_UNSUPPORTED` unless you first set
+   `NODE_OPTIONS=--openssl-legacy-provider` (in PowerShell: `$env:NODE_OPTIONS='--openssl-legacy-provider'; yarn start`).
+3. Use desktop Chrome; the app refuses embedded or unsupported browsers ("Browser or context not supported"). Open two
+   tabs on `http://localhost:8080/?audioOnly=1&detect=1`, allow the microphone, and join both to the same room with
+   different names. Wait until both hear each other.
+4. Watch the Detect panel in one tab for a while with no impairment: no condition should be raised.
+5. Start clumsy (run as administrator) with filter `outbound and udp`, tick **Drop**, set it to `5` %, and press
    **Start**.
-5. Expect the panel to show a raised `voice.loss.inbound` condition on an inbound audio stream, then refreshes while
+6. Expect the panel to show a raised `voice.loss.inbound` condition on an inbound audio stream, then refreshes while
    the loss continues.
-6. Press **Stop** in clumsy. Expect the condition to be cleared, and its line to show the raise-to-clear time.
-
-This live check needs the SDK's Detect delivery (pilot plan Steps 13 and 14). Before that, the panel shows only
-simulated events and the check cannot be made.
+7. Press **Stop** in clumsy. Expect the condition to be cleared, and its line to show the raise-to-clear time.
 
 ## What is it
 

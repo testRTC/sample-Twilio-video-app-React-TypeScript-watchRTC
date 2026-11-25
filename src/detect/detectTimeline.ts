@@ -4,9 +4,15 @@ import { DetectPayload, DetectSeverity } from './detectPayload';
  * Groups delivered `onDetect` payloads by peer connection, then stream, then condition (FR8.5), and keeps each
  * condition's raise-to-clear timeline. Pure: the panel and the tests share it.
  *
- * Grouping uses only payload fields: `peerConnectionId`, `streamId`, `conditionId`, `state`, `eventTimestamp`. A
- * payload with no peer connection (a session-level `config_error`) is kept under SESSION_GROUP; one with no stream
- * under PEER_CONNECTION_GROUP.
+ * Grouping uses only payload fields: `peerConnectionId`, `streamId`, `conditionId`, `state`, `eventTimestamp`.
+ *
+ * A `config_error` is never shown in the host UI (R-233; FD 11.6.1; S-119, 2026-11-25): `addPayload` returns the
+ * timeline it is given, unchanged. The developer sees it as the SDK's one "[watchRTC detect]" console line (R-395)
+ * and through `detect.capabilities().configErrors` (R-425).
+ *
+ * SESSION_GROUP and PEER_CONNECTION_GROUP are guards for a signal payload with no peer connection or no stream. At
+ * watchrtc-sdk 7ee5b63 the SDK always sets `peerConnectionId` on a signal payload (detect-session.ts payloadOf), so
+ * SESSION_GROUP cannot fire in live use; it is kept so such a payload is still grouped, and is reached in tests.
  */
 
 export const SESSION_GROUP = '(session)';
@@ -51,6 +57,9 @@ const findOrAdd = <T>(list: T[], match: (item: T) => boolean, create: () => T): 
 
 /** Returns a new timeline with the payload added; the input is not changed. */
 export function addPayload(timeline: DetectTimeline, payload: DetectPayload): DetectTimeline {
+  // R-233 (S-119): a config_error is not shown in the panel.
+  if (payload.state === 'config_error') return timeline;
+
   const next: DetectTimeline = timeline.map(pc => ({
     peerConnectionId: pc.peerConnectionId,
     streams: pc.streams.map(s => ({
