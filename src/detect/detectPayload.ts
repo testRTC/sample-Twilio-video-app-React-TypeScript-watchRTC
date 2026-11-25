@@ -8,6 +8,15 @@
  * `direction`) are the ones in that list and in the SDK's `src/voice-signals/detector-contract.ts`. Fields whose type
  * the documents do not fix are typed `unknown` and are not displayed. When the SDK exports its own payload type, this
  * file is replaced by an import of it.
+ *
+ * Checked against the SDK's actual payload on 2026-11-25 (plan Step 16 part 2; watchrtc-sdk 7ee5b63,
+ * `src/live-windowing/detect-session.ts` payloadOf and reportConfigError): every field the SDK sets is named here.
+ * The SDK's `lib/` does not export its `DetectPayload` type from the package root, and that type is loose
+ * (`{ schemaVersion, state, [field]: unknown }`), so this list stays. Two differences from part 1's list:
+ * - `configErrors` is the additive optional field of a `config_error` payload (P-78 (R-424, S-92); named as
+ *   `capabilities()` names it, P-79 (R-425)). Added here typed `unknown`; it is not displayed.
+ * - On a `config_error` the SDK leaves `eventTimestamp` out only when its clock (`Date.now()`) fails; the demo keeps
+ *   the field required.
  */
 
 export type DetectState = 'raised' | 'refresh' | 'cleared' | 'config_error';
@@ -54,6 +63,8 @@ export interface DetectPayload {
   measuredPtimeSampleCount?: unknown;
   impairedShareSpanMs?: unknown;
   clearCause?: string;
+  // config_error only (P-78 (R-424)); not displayed
+  configErrors?: unknown;
 }
 
 /** Signal #1, the only signal the pilot builds (06-signal-catalogue.md §3 #1). */
